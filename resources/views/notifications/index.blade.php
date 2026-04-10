@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto">
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Notifications</h1>
             <p class="text-gray-500 text-sm mt-1">Stay updated with your latest activities</p>

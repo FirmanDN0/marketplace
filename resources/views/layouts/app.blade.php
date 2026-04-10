@@ -126,7 +126,7 @@
                 'bg-blue-50 border-blue-400 text-blue-800': msg.type === 'info',
                 'bg-red-50 border-red-400 text-red-800': msg.type === 'error'
              }"
-             class="px-4 py-3 rounded-xl border shadow-lg text-sm flex items-center gap-3 min-w-[300px]">
+             class="px-4 py-3 rounded-xl border shadow-lg text-sm flex items-center gap-3 min-w-[250px] sm:min-w-[300px] max-w-[90vw]">
             <i class="fas" :class="{'fa-check-circle': msg.type==='success', 'fa-info-circle': msg.type==='info', 'fa-exclamation-circle': msg.type==='error'}"></i>
             <span x-text="msg.text"></span>
             <button @click="msgs.splice(i, 1)" class="ml-auto text-current opacity-50 hover:opacity-100"><i class="fas fa-times"></i></button>
@@ -137,21 +137,47 @@
 @auth
 @if($isDashboard)
 {{-- DASHBOARD LAYOUT --}}
-<div class="flex min-h-screen">
-    <aside class="w-64 shrink-0 {{ $isAdmin ? 'bg-slate-900 text-gray-300' : 'bg-white border-r border-gray-200 text-gray-700' }} flex flex-col fixed inset-y-0 left-0 z-40 transition-transform" id="sidebar"
-           x-data="{ sideOpen: false }">
+<div class="flex min-h-screen" x-data="{ sideOpen: false }">
+    {{-- Mobile Overlay --}}
+    <div x-show="sideOpen" x-transition.opacity @click="sideOpen = false"
+         class="fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+
+    {{-- Mobile Top Bar --}}
+    <div class="fixed top-0 left-0 right-0 z-30 lg:hidden {{ $isAdmin ? 'bg-slate-900' : 'bg-white border-b border-gray-200' }} h-14 flex items-center px-4 gap-3">
+        <button @click="sideOpen = !sideOpen" class="{{ $isAdmin ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-blue-600' }} p-2 -ml-2 rounded-lg transition">
+            <i class="fas fa-bars text-lg"></i>
+        </button>
+        @if($isAdmin)
+            <span class="font-bold text-white text-sm">Admin Panel</span>
+        @elseif($isProvider)
+            <span class="font-bold text-gray-800 text-sm">Seller Dashboard</span>
+        @else
+            <span class="font-bold text-gray-800 text-sm">My Account</span>
+        @endif
+        <a href="{{ route('home') }}" class="ml-auto text-xs {{ $isAdmin ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-blue-600' }} transition">
+            <i class="fas fa-home"></i>
+        </a>
+    </div>
+
+    <aside class="w-64 shrink-0 {{ $isAdmin ? 'bg-slate-900 text-gray-300' : 'bg-white border-r border-gray-200 text-gray-700' }} flex flex-col fixed inset-y-0 left-0 z-50 transition-transform duration-300"
+           :class="sideOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" id="sidebar">
         <div class="p-5 {{ $isAdmin ? 'border-b border-slate-700' : 'border-b border-gray-100' }}">
-            <div class="flex items-center gap-3">
-                @if($isAdmin)
-                    <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-sm"></i></span>
-                    <span class="font-bold text-white text-lg">Admin Panel</span>
-                @elseif($isProvider)
-                    <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">S</span>
-                    <div><div class="font-bold text-sm">Seller Dashboard</div></div>
-                @else
-                    <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">S</span>
-                    <div class="font-bold text-sm">My Account</div>
-                @endif
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    @if($isAdmin)
+                        <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-sm"></i></span>
+                        <span class="font-bold text-white text-lg">Admin Panel</span>
+                    @elseif($isProvider)
+                        <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">S</span>
+                        <div><div class="font-bold text-sm">Seller Dashboard</div></div>
+                    @else
+                        <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">S</span>
+                        <div class="font-bold text-sm">My Account</div>
+                    @endif
+                </div>
+                <button type="button" @click="sideOpen = false" class="lg:hidden {{ $isAdmin ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600' }} w-8 h-8 flex items-center justify-center rounded-lg transition hover:bg-black/10">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
             </div>
             <a href="{{ route('home') }}" class="flex items-center gap-2 mt-4 text-sm {{ $isAdmin ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-blue-600' }} transition">
                 <i class="fas fa-arrow-left text-xs"></i> Back to Home
@@ -163,18 +189,22 @@
                 @php $navLinks = [
                     ['route' => 'admin.dashboard', 'icon' => 'fa-chart-pie', 'label' => 'Dashboard'],
                     ['route' => 'admin.users.index', 'icon' => 'fa-users', 'label' => 'Users'],
-                    ['route' => 'admin.services.index', 'icon' => 'fa-briefcase', 'label' => 'Services'],
+                    ['route' => 'admin.services.index', 'icon' => 'fa-briefcase', 'label' => 'Services', 'badge' => $adminPendingCounts['services'] ?? 0],
                     ['route' => 'admin.categories.index', 'icon' => 'fa-tags', 'label' => 'Categories'],
                     ['route' => 'admin.orders.index', 'icon' => 'fa-box', 'label' => 'Orders'],
-                    ['route' => 'admin.disputes.index', 'icon' => 'fa-exclamation-triangle', 'label' => 'Disputes'],
-                    ['route' => 'admin.withdrawals.index', 'icon' => 'fa-money-bill-wave', 'label' => 'Withdrawals'],
+                    ['route' => 'admin.disputes.index', 'icon' => 'fa-exclamation-triangle', 'label' => 'Disputes', 'badge' => $adminPendingCounts['disputes'] ?? 0],
+                    ['route' => 'admin.withdrawals.index', 'icon' => 'fa-money-bill-wave', 'label' => 'Withdrawals', 'badge' => $adminPendingCounts['withdrawals'] ?? 0],
+                    ['route' => 'admin.reviews.index', 'icon' => 'fa-star', 'label' => 'Reviews'],
                     ['route' => 'admin.reports', 'icon' => 'fa-chart-bar', 'label' => 'Reports'],
-                    ['route' => 'admin.customer-service.index', 'icon' => 'fa-headset', 'label' => 'Customer Service'],
+                    ['route' => 'admin.customer-service.index', 'icon' => 'fa-headset', 'label' => 'Customer Service', 'badge' => $adminPendingCounts['cs'] ?? 0],
                 ]; @endphp
                 @foreach($navLinks as $link)
-                    <a href="{{ route($link['route']) }}"
+                    <a href="{{ route($link['route']) }}" @click="sideOpen = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs($link['route'].'*') || request()->routeIs(str_replace('.index','',$link['route']).'.*') ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-slate-800 hover:text-white' }}">
                         <i class="fas {{ $link['icon'] }} w-5 text-center"></i>{{ $link['label'] }}
+                        @if(!empty($link['badge']))
+                            <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ $link['badge'] }}</span>
+                        @endif
                     </a>
                 @endforeach
             @elseif($isProvider)
@@ -187,7 +217,7 @@
                     ['route' => 'profile.edit', 'icon' => 'fa-cog', 'label' => 'Settings'],
                 ]; @endphp
                 @foreach($navLinks as $link)
-                    <a href="{{ route($link['route']) }}"
+                    <a href="{{ route($link['route']) }}" @click="sideOpen = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs($link['route'].'*') || request()->routeIs(str_replace('.index','',$link['route']).'.*') ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
                         <i class="fas {{ $link['icon'] }} w-5 text-center"></i>{{ $link['label'] }}
                     </a>
@@ -201,7 +231,7 @@
                     ['route' => 'customer-service.index', 'icon' => 'fa-headset', 'label' => 'Support'],
                 ]; @endphp
                 @foreach($navLinks as $link)
-                    <a href="{{ route($link['route']) }}"
+                    <a href="{{ route($link['route']) }}" @click="sideOpen = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs($link['route'].'*') || request()->routeIs(str_replace('.index','',$link['route']).'.*') ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
                         <i class="fas {{ $link['icon'] }} w-5 text-center"></i>{{ $link['label'] }}
                     </a>
@@ -226,8 +256,8 @@
         </div>
     </aside>
 
-    <main class="flex-1 ml-64 bg-gray-50 min-h-screen">
-        <div class="p-6 lg:p-8">
+    <main class="flex-1 lg:ml-64 bg-gray-50 min-h-screen">
+        <div class="p-4 pt-[4.5rem] sm:p-6 sm:pt-[5rem] lg:p-8 lg:pt-8">
             @yield('content')
         </div>
     </main>

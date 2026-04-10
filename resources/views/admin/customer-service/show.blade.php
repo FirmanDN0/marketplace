@@ -4,7 +4,7 @@
 <div class="max-w-4xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex items-start justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
             <a href="{{ route('admin.customer-service.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
             <div>

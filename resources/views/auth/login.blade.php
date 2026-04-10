@@ -13,6 +13,12 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            @if (session('success'))
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i> {{ session('success') }}
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
                     @foreach ($errors->all() as $error)
@@ -24,9 +30,9 @@
             <form method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
-                           placeholder="you@example.com"
+                    <label for="login" class="block text-sm font-medium text-gray-700 mb-1.5">Email atau Username</label>
+                    <input id="login" type="text" name="login" value="{{ old('login') }}" required autocomplete="username" autofocus
+                           placeholder="email atau username"
                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition">
                 </div>
 
@@ -48,6 +54,7 @@
                                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         <span class="text-sm text-gray-600">Remember me</span>
                     </label>
+                    <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lupa Password?</a>
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-200/50">

@@ -40,7 +40,7 @@ class WithdrawController extends Controller
         $profile  = UserProfile::where('user_id', $provider->id)->firstOrFail();
 
         $data = $request->validate([
-            'amount'          => "required|numeric|min:10|max:{$profile->balance}",
+            'amount'          => "required|numeric|min:50000|max:{$profile->balance}",
             'method'          => 'required|in:bank_transfer,paypal,gopay,dana',
             'account_name'    => 'required|string|max:100',
             'account_number'  => 'required|string|max:100',

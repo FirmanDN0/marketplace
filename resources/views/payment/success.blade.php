@@ -10,7 +10,7 @@
         <p class="text-sm text-gray-500 mb-6">Order <strong class="text-gray-700">{{ $order->order_number }}</strong> is confirmed. The provider will start working soon.</p>
 
         <div class="bg-gray-50 rounded-xl p-4 mb-6">
-            <div class="grid grid-cols-2 gap-3 text-left">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
                 <div><p class="text-xs text-gray-400">SERVICE</p><p class="text-sm font-medium text-gray-900">{{ Str::limit(optional($order->service)->title, 35) }}</p></div>
                 <div><p class="text-xs text-gray-400">AMOUNT PAID</p><p class="text-sm font-bold text-green-600">Rp {{ number_format($order->price, 0, ',', '.') }}</p></div>
             </div>

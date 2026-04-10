@@ -28,15 +28,39 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Order Info</h3></div>
                 <div class="p-5 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Service</div><p class="text-sm text-gray-900 font-medium">{{ optional($order->service)->title }}</p></div>
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Provider</div><p class="text-sm text-gray-900">{{ optional($order->provider)->name }}</p></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Package</div><p class="text-sm text-gray-900">{{ optional($order->package)->name }} <span class="text-gray-400">({{ optional($order->package)->package_type }})</span></p></div>
-                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Delivery Deadline</div><p class="text-sm text-gray-900">{{ optional($order->delivery_deadline)->format('M d, Y H:i') }}</p></div>
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase font-medium mb-1">Delivery Deadline</div>
+                            @if($order->delivery_deadline)
+                                @php
+                                    $now = now();
+                                    $isActive = in_array($order->status, ['paid', 'in_progress']);
+                                    $isOverdue = $isActive && $now->gt($order->delivery_deadline);
+                                    $hoursLeft = $isActive ? $now->diffInHours($order->delivery_deadline, false) : null;
+                                @endphp
+                                <p class="text-sm font-medium {{ $isOverdue ? 'text-red-600' : ($hoursLeft !== null && $hoursLeft <= 24 ? 'text-orange-600' : 'text-gray-900') }}">
+                                    {{ $order->delivery_deadline->format('M d, Y H:i') }}
+                                </p>
+                                @if($isActive)
+                                    @if($isOverdue)
+                                        <span class="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full"><i class="fas fa-exclamation-circle"></i> Terlambat {{ $now->diffForHumans($order->delivery_deadline, true) }}</span>
+                                    @elseif($hoursLeft <= 24)
+                                        <span class="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full"><i class="fas fa-clock"></i> Sisa {{ $now->diffForHumans($order->delivery_deadline, true) }}</span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full"><i class="fas fa-clock"></i> Sisa {{ $now->diffForHumans($order->delivery_deadline, true) }}</span>
+                                    @endif
+                                @endif
+                            @else
+                                <p class="text-sm text-gray-400">—</p>
+                            @endif
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Price Paid</div><p class="text-sm font-semibold text-gray-900">Rp {{ number_format($order->price, 0, ',', '.') }}</p></div>
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Placed On</div><p class="text-sm text-gray-900">{{ $order->created_at->format('M d, Y') }}</p></div>
                     </div>

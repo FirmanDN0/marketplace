@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-heart text-red-500 mr-2"></i>My Favorites</h1>
             <p class="text-gray-500 text-sm mt-1">Layanan yang kamu simpan</p>

@@ -18,11 +18,11 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Dispute Details</h3></div>
                 <div class="p-5 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><p class="text-xs text-gray-400 mb-1">Order</p><p class="text-sm font-medium text-gray-900">{{ optional($dispute->order)->order_number }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Opened By</p><p class="text-sm font-medium text-gray-900">{{ optional($dispute->opener)->name }}</p></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><p class="text-xs text-gray-400 mb-1">Customer</p><p class="text-sm text-gray-700">{{ optional($dispute->order->customer)->name }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Provider</p><p class="text-sm text-gray-700">{{ optional($dispute->order->provider)->name }}</p></div>
                     </div>
@@ -65,6 +65,14 @@
                                 <option value="closed">Closed</option>
                             </select>
                         </div>
+                        @if($dispute->order && $dispute->order->payment && $dispute->order->payment->status === 'success' && !in_array($dispute->order->status, ['cancelled', 'completed']))
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" name="refund" value="1" class="mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                <span class="text-sm text-yellow-800"><strong>Refund ke customer</strong> — Rp {{ number_format($dispute->order->price, 0, ',', '.') }} akan dikembalikan ke saldo customer dan order dibatalkan.</span>
+                            </label>
+                        </div>
+                        @endif
                         <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
                             <i class="fas fa-check"></i> Submit Resolution
                         </button>

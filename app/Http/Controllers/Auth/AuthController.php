@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
@@ -20,20 +21,26 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => 'required|email',
+        $request->validate([
+            'login'    => 'required|string',
             'password' => 'required',
         ]);
 
+        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $credentials = [
+            $loginField => $request->login,
+            'password'  => $request->password,
+        ];
+
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors(['email' => 'Invalid credentials.'])->withInput();
+            return back()->withErrors(['login' => 'Email/username atau password salah.'])->withInput();
         }
 
         $user = Auth::user();
 
         if ($user->status !== 'active') {
             Auth::logout();
-            return back()->withErrors(['email' => 'Your account is not active.']);
+            return back()->withErrors(['login' => 'Akun kamu tidak aktif.']);
         }
 
         $request->session()->regenerate();
@@ -85,7 +92,9 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return $this->redirectByRole($user);
+        EmailVerificationController::sendVerificationEmail($user);
+
+        return redirect()->route('verification.notice');
     }
 
     public function logout(Request $request)

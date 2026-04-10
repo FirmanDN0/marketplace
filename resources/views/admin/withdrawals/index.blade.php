@@ -19,15 +19,46 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">Filter</button>
             </form>
         </div>
-        <div class="overflow-x-auto">
+        {{-- Mobile Card View --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($withdrawals as $w)
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-semibold text-gray-900">Rp {{ number_format($w->amount, 0, ',', '.') }}</span>
+                    @php $sc = match($w->status) { 'approved','processed' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ $w->status }}</span>
+                </div>
+                <div class="text-sm text-gray-700 mb-1">{{ optional($w->provider)->name }} &middot; {{ str_replace('_',' ',$w->method) }}</div>
+                <div class="text-xs text-gray-400 mb-2">{{ $w->created_at->format('M d, Y') }}</div>
+                @if($w->status === 'pending')
+                <div class="flex flex-col gap-2">
+                    <form method="POST" action="{{ route('admin.withdrawals.approve', $w->id) }}" onsubmit="return confirm('Approve this withdrawal?')">
+                        @csrf
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"><i class="fas fa-check mr-1"></i>Approve</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.withdrawals.reject', $w->id) }}" onsubmit="return confirm('Reject this withdrawal?')" class="flex items-center gap-2">
+                        @csrf
+                        <input type="text" name="notes" placeholder="Reason…" required class="flex-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-400 focus:border-transparent">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"><i class="fas fa-times mr-1"></i>Reject</button>
+                    </form>
+                </div>
+                @endif
+            </div>
+            @empty
+            <div class="px-4 py-8 text-center text-gray-400">No withdrawal requests.</div>
+            @endforelse
+        </div>
+
+        {{-- Desktop Table View --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Provider</th>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Amount</th>
-                        <th class="text-left px-5 py-3 font-semibold text-gray-600">Method</th>
+                        <th class="text-left px-5 py-3 font-semibold text-gray-600 hidden md:table-cell">Method</th>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Status</th>
-                        <th class="text-left px-5 py-3 font-semibold text-gray-600">Date</th>
+                        <th class="text-left px-5 py-3 font-semibold text-gray-600 hidden md:table-cell">Date</th>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Actions</th>
                     </tr>
                 </thead>
@@ -36,12 +67,12 @@
                 <tr class="hover:bg-gray-50/50 transition">
                     <td class="px-5 py-3 font-medium text-gray-900">{{ optional($w->provider)->name }}</td>
                     <td class="px-5 py-3 font-semibold text-gray-900">Rp {{ number_format($w->amount, 0, ',', '.') }}</td>
-                    <td class="px-5 py-3 text-gray-700">{{ str_replace('_',' ',$w->method) }}</td>
+                    <td class="px-5 py-3 text-gray-700 hidden md:table-cell">{{ str_replace('_',' ',$w->method) }}</td>
                     <td class="px-5 py-3">
                         @php $sc = match($w->status) { 'approved','processed' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ $w->status }}</span>
                     </td>
-                    <td class="px-5 py-3 text-gray-500">{{ $w->created_at->format('M d, Y') }}</td>
+                    <td class="px-5 py-3 text-gray-500 hidden md:table-cell">{{ $w->created_at->format('M d, Y') }}</td>
                     <td class="px-5 py-3">
                         @if($w->status === 'pending')
                         <div class="flex items-center gap-2">

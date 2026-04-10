@@ -37,40 +37,84 @@
         </form>
     </div>
 
-    {{-- Table --}}
-    <div class="overflow-x-auto">
+    {{-- Mobile Card View --}}
+    <div class="sm:hidden divide-y divide-gray-100">
+        @forelse($users as $user)
+        <div class="px-4 py-4">
+            <div class="flex items-center gap-3 mb-2">
+                @if($user->avatar)
+                    <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover">
+                @else
+                    <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                        {{ strtoupper(substr($user->name,0,1)) }}
+                    </div>
+                @endif
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-800 truncate">{{ $user->name }}</div>
+                    <div class="text-xs text-gray-400 truncate">{{ $user->email }}</div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-600">{{ ucfirst($user->role) }}</span>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : ($user->status === 'suspended' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
+                        {{ ucfirst($user->status) }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.users.edit', $user->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition"><i class="fas fa-pen text-xs"></i></a>
+                    @if($user->id !== auth()->id())
+                    <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" onsubmit="return confirm('Delete this user permanently?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"><i class="fas fa-trash text-xs"></i></button>
+                    </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="px-4 py-12 text-center text-gray-400">No users found.</div>
+        @endforelse
+    </div>
+
+    {{-- Desktop Table View --}}
+    <div class="hidden sm:block overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                    <th class="px-6 py-3 font-medium">Name</th>
-                    <th class="px-6 py-3 font-medium">Role</th>
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium">Joined</th>
-                    <th class="px-6 py-3 font-medium">Actions</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Name</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Role</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Status</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Joined</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($users as $user)
                 <tr class="hover:bg-gray-50/50 transition">
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
-                                {{ strtoupper(substr($user->name,0,1)) }}
-                            </div>
+                            @if($user->avatar)
+                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover">
+                            @else
+                                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                                    {{ strtoupper(substr($user->name,0,1)) }}
+                                </div>
+                            @endif
                             <div>
                                 <div class="text-sm font-medium text-gray-800">{{ $user->name }}</div>
                                 <div class="text-xs text-gray-400">{{ $user->email }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{{ ucfirst($user->role) }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600">{{ ucfirst($user->role) }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : ($user->status === 'suspended' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
                             {{ ucfirst($user->status) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-500 hidden md:table-cell">{{ $user->created_at->format('M d, Y') }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         <div class="flex items-center gap-2">
                             <a href="{{ route('admin.users.edit', $user->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition" title="Edit">
                                 <i class="fas fa-pen text-xs"></i>

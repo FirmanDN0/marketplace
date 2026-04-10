@@ -181,8 +181,20 @@ class TopUpController extends Controller
      */
     public function notification(Request $request)
     {
+        $payload     = $request->all();
+        $serverKey   = config('services.midtrans.server_key');
+        $orderId     = $payload['order_id'] ?? null;
+        $statusCode  = $payload['status_code'] ?? null;
+        $grossAmount = $payload['gross_amount'] ?? null;
+        $signature   = $payload['signature_key'] ?? null;
+
+        // Verify Midtrans signature
+        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+        if (!$signature || !hash_equals($expectedSignature, $signature)) {
+            return response('Invalid signature', 403);
+        }
+
         $notification = new Notification();
-        $orderId      = $notification->order_id;
         $txStatus     = $notification->transaction_status;
         $paymentType  = $notification->payment_type;
         $fraudStatus  = $notification->fraud_status ?? null;

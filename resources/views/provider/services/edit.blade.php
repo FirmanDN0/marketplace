@@ -75,7 +75,7 @@
             <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">Required</span>
         </div>
         <div class="p-5 space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Package Name</label>
                     <input type="text" name="basic_name" required value="{{ old('basic_name', optional($basic)->name) }}"
@@ -87,7 +87,7 @@
                            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Delivery Days</label>
                     <input type="number" name="basic_days" required min="1" value="{{ old('basic_days', optional($basic)->delivery_days) }}"
@@ -119,7 +119,7 @@
             <span class="bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Optional</span>
         </div>
         <div class="p-5 space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Package Name</label>
                     <input type="text" name="standard_name" value="{{ old('standard_name', optional($standard)->name) }}"
@@ -131,7 +131,7 @@
                            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Delivery Days</label>
                     <input type="number" name="standard_days" min="1" value="{{ old('standard_days', optional($standard)->delivery_days) }}"
@@ -163,7 +163,7 @@
             <span class="bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Optional</span>
         </div>
         <div class="p-5 space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Package Name</label>
                     <input type="text" name="premium_name" value="{{ old('premium_name', optional($premium)->name) }}"
@@ -175,7 +175,7 @@
                            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Delivery Days</label>
                     <input type="number" name="premium_days" min="1" value="{{ old('premium_days', optional($premium)->delivery_days) }}"

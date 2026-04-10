@@ -19,7 +19,7 @@
                 </div>
                 <div class="p-5 space-y-4">
                     {{-- Stats --}}
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="text-center bg-gray-50 rounded-xl py-3">
                             <div class="text-lg font-bold text-gray-900">{{ number_format($service->avg_rating, 1) }} <i class="fas fa-star text-yellow-400 text-sm"></i></div>
                             <div class="text-xs text-gray-500">Rating</div>
@@ -34,7 +34,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                         <div><p class="text-xs text-gray-400 mb-1">Provider</p><p class="text-sm font-medium text-gray-900">{{ optional($service->provider)->name }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Category</p><p class="text-sm font-medium text-gray-900">{{ optional($service->category)->name }}</p></div>
                     </div>

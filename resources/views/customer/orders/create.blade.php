@@ -12,11 +12,11 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
         <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">{{ $service->title }}</h3></div>
         <div class="p-5 space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><p class="text-xs text-gray-400 mb-1">Package</p><p class="text-sm font-medium text-gray-900">{{ ucfirst($package->package_type) }}: {{ $package->name }}</p></div>
                 <div><p class="text-xs text-gray-400 mb-1">Price</p><p class="text-lg font-bold text-blue-600">Rp {{ number_format($package->price, 0, ',', '.') }}</p></div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><p class="text-xs text-gray-400 mb-1">Delivery Time</p><p class="text-sm text-gray-700">{{ $package->delivery_days }} day{{ $package->delivery_days!=1?'s':'' }}</p></div>
                 <div><p class="text-xs text-gray-400 mb-1">Revisions</p><p class="text-sm text-gray-700">{{ $package->revisions == -1 ? 'Unlimited' : $package->revisions }}</p></div>
             </div>

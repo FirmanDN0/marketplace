@@ -20,7 +20,19 @@ class OrderController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('order_number', 'like', "%{$request->search}%");
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('provider', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->from);
+        }
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->to);
         }
 
         $orders = $query->latest()->paginate(20)->withQueryString();

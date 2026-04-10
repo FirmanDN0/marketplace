@@ -268,22 +268,15 @@
             <div>
                 <h4 class="font-semibold text-gray-900 mb-4">About</h4>
                 <ul class="space-y-2.5 text-sm text-gray-500">
-                    <li><a href="#" class="hover:text-blue-600 transition">Careers</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Press & News</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Partnerships</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Privacy Policy</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Terms of Service</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Intellectual Property Claims</a></li>
+                    <li><a href="{{ route('pages.privacy') }}" class="hover:text-blue-600 transition">Kebijakan Privasi</a></li>
+                    <li><a href="{{ route('pages.terms') }}" class="hover:text-blue-600 transition">Syarat & Ketentuan</a></li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-semibold text-gray-900 mb-4">Support</h4>
                 <ul class="space-y-2.5 text-sm text-gray-500">
-                    <li><a href="#" class="hover:text-blue-600 transition">Help & Support</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Trust & Safety</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Selling on ServeMix</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Buying on ServeMix</a></li>
-                    <li><a href="#" class="hover:text-blue-600 transition">Contact Us</a></li>
+                    <li><a href="{{ route('pages.faq') }}" class="hover:text-blue-600 transition">FAQ</a></li>
+                    <li><a href="{{ route('customer-service.index') }}" class="hover:text-blue-600 transition">Customer Service</a></li>
                 </ul>
             </div>
         </div>

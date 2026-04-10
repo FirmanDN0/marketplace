@@ -22,27 +22,56 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto">
+    {{-- Mobile Card View --}}
+    <div class="sm:hidden divide-y divide-gray-100">
+        @forelse($orders as $order)
+        <a href="{{ route('provider.orders.show', $order->id) }}" class="block px-4 py-4 hover:bg-gray-50/50 transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-blue-600">#{{ $order->order_number }}</span>
+                @php $colors = match($order->status) {
+                    'completed' => 'bg-green-100 text-green-700',
+                    'in_progress','paid' => 'bg-blue-100 text-blue-700',
+                    'cancelled','disputed' => 'bg-red-100 text-red-700',
+                    'delivered' => 'bg-cyan-100 text-cyan-700',
+                    default => 'bg-yellow-100 text-yellow-700'
+                }; @endphp
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $colors }}">{{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
+            </div>
+            <div class="text-sm text-gray-700 font-medium truncate mb-1">{{ optional($order->service)->title }}</div>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>{{ optional($order->customer)->name }}</span>
+                <span class="font-semibold text-gray-800 text-sm">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</span>
+            </div>
+        </a>
+        @empty
+        <div class="px-4 py-12 text-center text-gray-400">
+            <div class="text-3xl mb-2"><i class="fas fa-inbox"></i></div>
+            No orders yet.
+        </div>
+        @endforelse
+    </div>
+
+    {{-- Desktop Table View --}}
+    <div class="hidden sm:block overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                    <th class="px-6 py-3 font-medium">Order #</th>
-                    <th class="px-6 py-3 font-medium">Customer</th>
-                    <th class="px-6 py-3 font-medium">Service</th>
-                    <th class="px-6 py-3 font-medium">Package</th>
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium">Earning</th>
-                    <th class="px-6 py-3 font-medium">Deadline</th>
-                    <th class="px-6 py-3 font-medium w-10"></th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Order #</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Customer</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Service</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Status</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Earning</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Deadline</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium w-10"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($orders as $order)
                 <tr class="hover:bg-gray-50/50 transition">
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4">
                         <a href="{{ route('provider.orders.show', $order->id) }}" class="text-sm font-semibold text-blue-600 hover:text-blue-700">#{{ $order->order_number }}</a>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4">
                         <div class="flex items-center gap-2">
                             <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-semibold">
                                 {{ strtoupper(substr(optional($order->customer)->name ?? 'U', 0, 1)) }}
@@ -50,9 +79,8 @@
                             <span class="text-sm text-gray-700">{{ optional($order->customer)->name }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-600 max-w-[200px] truncate">{{ optional($order->service)->title }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ optional($order->package)->name }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600 max-w-[200px] truncate hidden md:table-cell">{{ optional($order->service)->title }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         @php $colors = match($order->status) {
                             'completed' => 'bg-green-100 text-green-700',
                             'in_progress','paid' => 'bg-blue-100 text-blue-700',
@@ -62,9 +90,27 @@
                         }; @endphp
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $colors }}">{{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
                     </td>
-                    <td class="px-6 py-4 text-sm font-semibold text-gray-800">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ optional($order->delivery_deadline)->format('M d') }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm font-semibold text-gray-800">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm hidden md:table-cell">
+                        @if($order->delivery_deadline)
+                            @php
+                                $isActive = in_array($order->status, ['paid', 'in_progress']);
+                                $isOverdue = $isActive && now()->gt($order->delivery_deadline);
+                                $hoursLeft = $isActive ? now()->diffInHours($order->delivery_deadline, false) : null;
+                            @endphp
+                            <span class="{{ $isOverdue ? 'text-red-600 font-semibold' : ($hoursLeft !== null && $hoursLeft <= 24 ? 'text-orange-600 font-medium' : 'text-gray-500') }}">
+                                {{ $order->delivery_deadline->format('M d') }}
+                                @if($isOverdue)
+                                    <i class="fas fa-exclamation-circle text-red-500 ml-1" title="Terlambat"></i>
+                                @elseif($hoursLeft !== null && $hoursLeft <= 24)
+                                    <i class="fas fa-clock text-orange-500 ml-1" title="Segera"></i>
+                                @endif
+                            </span>
+                        @else
+                            <span class="text-gray-400">—</span>
+                        @endif
+                    </td>
+                    <td class="px-4 lg:px-6 py-4">
                         <a href="{{ route('provider.orders.show', $order->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition">
                             <i class="fas fa-eye text-xs"></i>
                         </a>
@@ -72,7 +118,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-gray-400">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-400">
                         <div class="text-3xl mb-2"><i class="fas fa-inbox"></i></div>
                         No orders yet.
                     </td>

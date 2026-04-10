@@ -19,13 +19,13 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Order Info</h3></div>
                 <div class="p-5 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><p class="text-xs text-gray-400 mb-1">Customer</p><p class="text-sm font-medium text-gray-900">{{ optional($order->customer)->name }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Provider</p><p class="text-sm font-medium text-gray-900">{{ optional($order->provider)->name }}</p></div>
                     </div>
                     <div><p class="text-xs text-gray-400 mb-1">Service</p><p class="text-sm font-medium text-gray-900">{{ optional($order->service)->title }}</p></div>
                     <div><p class="text-xs text-gray-400 mb-1">Package</p><p class="text-sm text-gray-700">{{ optional($order->package)->name }} <span class="text-gray-400">({{ optional($order->package)->package_type }})</span></p></div>
-                    <div class="grid grid-cols-3 gap-4 pt-2 border-t border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-100">
                         <div><p class="text-xs text-gray-400 mb-1">Order Price</p><p class="text-sm font-bold text-gray-900">Rp {{ number_format($order->price, 0, ',', '.') }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Platform Fee</p><p class="text-sm font-semibold text-orange-600">Rp {{ number_format($order->platform_fee, 0, ',', '.') }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Provider Earns</p><p class="text-sm font-semibold text-green-600">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</p></div>
@@ -44,7 +44,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Payment</h3></div>
                 <div class="p-5">
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div><p class="text-xs text-gray-400 mb-1">Amount</p><p class="text-sm font-semibold text-gray-900">Rp {{ number_format($order->payment->amount, 0, ',', '.') }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Method</p><p class="text-sm text-gray-700">{{ $order->payment->payment_method }}</p></div>
                         <div><p class="text-xs text-gray-400 mb-1">Status</p>

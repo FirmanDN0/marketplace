@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -89,5 +90,41 @@ class ProfileController extends Controller
         $user->update(['password' => Hash::make($data['password'])]);
 
         return back()->with('success', 'Password changed successfully.');
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'password' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['delete_password' => 'Password salah.']);
+        }
+
+        // Prevent deletion if user has active orders
+        $activeOrders = $user->isProvider()
+            ? $user->ordersAsProvider()->whereIn('status', ['paid', 'in_progress', 'delivered'])->count()
+            : $user->ordersAsCustomer()->whereIn('status', ['paid', 'in_progress', 'delivered'])->count();
+
+        if ($activeOrders > 0) {
+            return back()->withErrors(['delete_password' => 'Tidak bisa hapus akun karena masih ada order aktif.']);
+        }
+
+        // Delete avatar
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->profile()?->delete();
+        $user->delete();
+
+        return redirect()->route('home')->with('success', 'Akun berhasil dihapus.');
     }
 }

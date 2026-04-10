@@ -112,6 +112,18 @@ class OrderService
                 'reference_id'   => $order->order_number,
             ]);
 
+            // Record platform fee as revenue
+            Transaction::create([
+                'user_id'        => $order->provider_id,
+                'payment_id'     => optional($order->payment)->id,
+                'type'           => 'fee',
+                'amount'         => $order->platform_fee,
+                'balance_before' => 0,
+                'balance_after'  => 0,
+                'description'    => "Platform fee (10%) for Order #{$order->order_number}",
+                'reference_id'   => $order->order_number,
+            ]);
+
             NotificationService::send(
                 $order->provider_id,
                 'order_completed',
@@ -124,16 +136,31 @@ class OrderService
     }
 
     /**
-     * Cancel an order.
+     * Cancel an order. If already paid, refund to customer wallet.
      */
     public function cancel(Order $order, int $cancelledBy, string $reason): void
     {
-        $order->update([
-            'status'          => 'cancelled',
-            'cancelled_by'    => $cancelledBy,
-            'cancelled_reason' => $reason,
-            'cancelled_at'    => now(),
-        ]);
+        // If order was paid, process refund to wallet
+        $payment = $order->payment;
+        if ($payment && $payment->status === 'success' && in_array($order->status, ['paid', 'in_progress', 'delivered'])) {
+            (new PaymentService())->refund($payment);
+        } else {
+            $order->update([
+                'status'           => 'cancelled',
+                'cancelled_by'     => $cancelledBy,
+                'cancelled_reason' => $reason,
+                'cancelled_at'     => now(),
+            ]);
+        }
+
+        // Update cancel metadata if refund already set status
+        if ($order->cancelled_by === null) {
+            $order->update([
+                'cancelled_by'     => $cancelledBy,
+                'cancelled_reason' => $reason,
+                'cancelled_at'     => now(),
+            ]);
+        }
 
         NotificationService::send(
             $order->customer_id === $cancelledBy ? $order->provider_id : $order->customer_id,

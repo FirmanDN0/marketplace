@@ -21,7 +21,7 @@
             <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
                 {{ strtoupper(substr($service->provider->name, 0, 1)) }}
             </div>
-            <span class="font-medium text-gray-800">{{ $service->provider->name }}</span>
+            <a href="{{ route('provider.profile', $service->provider->username) }}" class="font-medium text-gray-800 hover:text-blue-600 transition">{{ $service->provider->name }}</a>
         </div>
         <div class="flex items-center gap-1 text-sm">
             <i class="fas fa-star text-yellow-400"></i>
@@ -88,7 +88,7 @@
                     <div>
                         <h3 class="font-bold text-gray-900">{{ $service->provider->name }}</h3>
                         <p class="text-sm text-blue-600 mb-1">Professional {{ optional($service->category)->name }} Specialist</p>
-                        <div class="grid grid-cols-4 gap-4 text-sm text-gray-500 mt-3">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-gray-500 mt-3">
                             <div>
                                 <div class="text-xs text-gray-400">From</div>
                                 <div class="font-medium text-gray-700">{{ $service->provider->profile->country ?? 'N/A' }}</div>

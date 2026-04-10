@@ -71,7 +71,7 @@ class OrderController extends Controller
 
         $data = $request->validate([
             'delivery_message' => 'required|string|min:20',
-            'delivery_file'    => 'nullable|file|max:20480',
+            'delivery_file'    => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip,rar,psd,ai,fig,mp4,mov|max:20480',
         ]);
 
         $filePath = null;
@@ -82,5 +82,24 @@ class OrderController extends Controller
         $this->orderService->deliver($order, $data['delivery_message'], $filePath);
 
         return back()->with('success', 'Delivery submitted successfully.');
+    }
+
+    public function cancel(Request $request, Order $order)
+    {
+        if ($order->provider_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (!in_array($order->status, ['paid', 'in_progress'])) {
+            return back()->withErrors(['error' => 'Order ini tidak bisa dibatalkan.']);
+        }
+
+        $data = $request->validate([
+            'cancel_reason' => 'required|string|min:10|max:500',
+        ]);
+
+        $this->orderService->cancel($order, auth()->id(), $data['cancel_reason']);
+
+        return redirect()->route('provider.orders.index')->with('success', 'Order berhasil dibatalkan. Dana dikembalikan ke customer.');
     }
 }

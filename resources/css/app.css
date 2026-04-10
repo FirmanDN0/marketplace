@@ -5,6 +5,9 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Alpine.js dynamic classes that Tailwind scanner can't detect from :class bindings */
+@source inline("translate-x-0 -translate-x-full lg:translate-x-0");
+
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';

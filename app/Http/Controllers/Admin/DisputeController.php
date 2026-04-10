@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
+use App\Services\OrderService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 
 class DisputeController extends Controller
@@ -31,6 +33,7 @@ class DisputeController extends Controller
         $data = $request->validate([
             'resolution' => 'required|string|max:1000',
             'status'     => 'required|in:resolved,closed',
+            'refund'     => 'nullable|in:1',
         ]);
 
         $dispute->update([
@@ -39,6 +42,16 @@ class DisputeController extends Controller
             'resolved_by' => auth()->id(),
             'resolved_at' => now(),
         ]);
+
+        // Process refund if requested
+        if (!empty($data['refund']) && $dispute->order) {
+            $order   = $dispute->order;
+            $payment = $order->payment;
+
+            if ($payment && $payment->status === 'success' && !in_array($order->status, ['cancelled', 'completed'])) {
+                (new OrderService())->cancel($order, auth()->id(), 'Dibatalkan oleh admin: ' . $data['resolution']);
+            }
+        }
 
         // Notify both parties
         \App\Services\NotificationService::send(

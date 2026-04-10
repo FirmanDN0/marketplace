@@ -3,12 +3,12 @@
 @section('content')
 <div class="max-w-4xl mx-auto">
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-comments text-blue-600 mr-2"></i>Customer Service</h1>
             <p class="text-gray-500 text-sm mt-1">Tanya apa saja — AI kami siap membantu 24/7</p>
         </div>
-        <a href="{{ route('customer-service.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2">
+        <a href="{{ route('customer-service.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2 self-start sm:self-auto">
             <i class="fas fa-plus"></i> Percakapan Baru
         </a>
     </div>

@@ -23,7 +23,7 @@
 
             <form method="POST" action="{{ route('register') }}" class="space-y-5">
                 @csrf
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required maxlength="100" placeholder="John Doe"
@@ -42,7 +42,7 @@
                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div x-data="{ show: false }">
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                         <div class="relative">

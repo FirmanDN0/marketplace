@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MessageController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrder;
 use App\Http\Controllers\Admin\DisputeController as AdminDispute;
 use App\Http\Controllers\Admin\WithdrawController as AdminWithdraw;
 use App\Http\Controllers\Admin\ReportController as AdminReport;
+use App\Http\Controllers\Admin\ReviewController as AdminReview;
 use App\Http\Controllers\Admin\CustomerServiceController as AdminCS;
 use App\Http\Controllers\CustomerServiceController;
 use App\Http\Controllers\Provider\DashboardController as ProviderDashboard;
@@ -30,42 +34,62 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
 use App\Http\Controllers\Customer\OrderController as CustomerOrder;
 use App\Http\Controllers\Customer\ReviewController as CustomerReview;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\ProviderProfileController;
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+Route::get('/provider/{username}', [ProviderProfileController::class, 'show'])->name('provider.profile');
+Route::get('/terms', [PageController::class, 'terms'])->name('pages.terms');
+Route::get('/privacy', [PageController::class, 'privacy'])->name('pages.privacy');
+Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post')->middleware('throttle:3,1');
+
+    Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email')->middleware('throttle:3,1');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update')->middleware('throttle:5,1');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// --- Midtrans Webhook (no auth, called by Midtrans server) ---
+// ─── Email Verification ───────────────────────────────────────────────────────
+
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::post('/email/resend', [EmailVerificationController::class, 'resend'])->name('verification.resend')->middleware('throttle:3,1');
+});
+Route::get('/email/verify/{token}', [EmailVerificationController::class, 'verify'])->name('verification.verify');
+
+// --- Midtrans Webhooks (no auth, called by Midtrans server) ---
 Route::post('/topup/notification', [TopUpController::class, 'notification'])->name('topup.notification');
+Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 
 // ─── Authenticated (shared) ────────────────────────────────────────────────────
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', 'active', 'verified'])->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/start', [MessageController::class, 'startOrFind'])->name('messages.start');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{conversation}/send', [MessageController::class, 'send'])->name('messages.send');
+    Route::post('/messages/{conversation}/send', [MessageController::class, 'send'])->name('messages.send')->middleware('throttle:30,1');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -79,30 +103,31 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Wallet & Top-Up (all authenticated users)
     Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
     Route::get('/wallet/withdraw', [WalletController::class, 'withdrawCreate'])->name('wallet.withdraw.create');
-    Route::post('/wallet/withdraw', [WalletController::class, 'withdrawStore'])->name('wallet.withdraw.store');
+    Route::post('/wallet/withdraw', [WalletController::class, 'withdrawStore'])->name('wallet.withdraw.store')->middleware('throttle:5,1');
     Route::get('/topup', [TopUpController::class, 'create'])->name('wallet.topup.create');
-    Route::post('/topup', [TopUpController::class, 'store'])->name('wallet.topup.store');
+    Route::post('/topup', [TopUpController::class, 'store'])->name('wallet.topup.store')->middleware('throttle:10,1');
     Route::get('/topup/history', [TopUpController::class, 'history'])->name('wallet.topup.history');
     Route::get('/topup/{topUp}/finish', [TopUpController::class, 'finish'])->name('wallet.topup.finish');
 
     // Customer Service (all authenticated users)
     Route::get('/customer-service', [CustomerServiceController::class, 'index'])->name('customer-service.index');
     Route::get('/customer-service/new', [CustomerServiceController::class, 'create'])->name('customer-service.create');
-    Route::post('/customer-service', [CustomerServiceController::class, 'store'])->name('customer-service.store');
+    Route::post('/customer-service', [CustomerServiceController::class, 'store'])->name('customer-service.store')->middleware('throttle:5,1');
     Route::get('/customer-service/{conversation}', [CustomerServiceController::class, 'show'])->name('customer-service.show');
-    Route::post('/customer-service/{conversation}/messages', [CustomerServiceController::class, 'sendMessage'])->name('customer-service.message');
+    Route::post('/customer-service/{conversation}/messages', [CustomerServiceController::class, 'sendMessage'])->name('customer-service.message')->middleware('throttle:20,1');
     Route::post('/customer-service/{conversation}/escalate', [CustomerServiceController::class, 'escalate'])->name('customer-service.escalate');
 
     // Payment
     Route::get('/payment/{order}', [PaymentController::class, 'show'])->name('payment.show');
-    Route::post('/payment/{order}/process', [PaymentController::class, 'process'])->name('payment.process');
+    Route::post('/payment/{order}/wallet', [PaymentController::class, 'payWithWallet'])->name('payment.wallet');
+    Route::get('/payment/{order}/finish', [PaymentController::class, 'finish'])->name('payment.finish');
     Route::get('/payment/{order}/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/{order}/failed', [PaymentController::class, 'failed'])->name('payment.failed');
 });
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:admin'])->group(function () {
     Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
 
     // Users
@@ -146,6 +171,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     // Reports
     Route::get('/reports', [AdminReport::class, 'index'])->name('reports');
 
+    // Reviews
+    Route::get('/reviews', [AdminReview::class, 'index'])->name('reviews.index');
+    Route::patch('/reviews/{review}/toggle', [AdminReview::class, 'toggleVisibility'])->name('reviews.toggle');
+    Route::delete('/reviews/{review}', [AdminReview::class, 'destroy'])->name('reviews.destroy');
+
     // Customer Service Management
     Route::get('/customer-service', [AdminCS::class, 'index'])->name('customer-service.index');
     Route::get('/customer-service/{conversation}', [AdminCS::class, 'show'])->name('customer-service.show');
@@ -157,13 +187,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 // Onboarding routes (no onboarding middleware — these ARE the onboarding)
-Route::prefix('provider/onboarding')->name('provider.onboarding.')->middleware(['auth', 'role:provider'])->group(function () {
+Route::prefix('provider/onboarding')->name('provider.onboarding.')->middleware(['auth', 'verified', 'role:provider'])->group(function () {
     Route::get('/step/{step}', [ProviderOnboarding::class, 'show'])->name('show');
     Route::post('/step/{step}', [ProviderOnboarding::class, 'save'])->name('save');
     Route::get('/complete', [ProviderOnboarding::class, 'complete'])->name('complete');
 });
 
-Route::prefix('provider')->name('provider.')->middleware(['auth', 'role:provider', 'provider.onboarding'])->group(function () {
+Route::prefix('provider')->name('provider.')->middleware(['auth', 'active', 'verified', 'role:provider', 'provider.onboarding'])->group(function () {
     Route::get('/', [ProviderDashboard::class, 'index'])->name('dashboard');
 
     // Services
@@ -180,6 +210,7 @@ Route::prefix('provider')->name('provider.')->middleware(['auth', 'role:provider
     Route::get('/orders/{order}', [ProviderOrder::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/start', [ProviderOrder::class, 'startWork'])->name('orders.start');
     Route::patch('/orders/{order}/deliver', [ProviderOrder::class, 'deliver'])->name('orders.deliver');
+    Route::patch('/orders/{order}/cancel', [ProviderOrder::class, 'cancel'])->name('orders.cancel');
 
     // Reviews
     Route::post('/reviews/{review}/reply', [ProviderReview::class, 'reply'])->name('reviews.reply');
@@ -188,18 +219,18 @@ Route::prefix('provider')->name('provider.')->middleware(['auth', 'role:provider
     // Withdrawals
     Route::get('/withdraw', [ProviderWithdraw::class, 'index'])->name('withdraw.index');
     Route::get('/withdraw/create', [ProviderWithdraw::class, 'create'])->name('withdraw.create');
-    Route::post('/withdraw', [ProviderWithdraw::class, 'store'])->name('withdraw.store');
+    Route::post('/withdraw', [ProviderWithdraw::class, 'store'])->name('withdraw.store')->middleware('throttle:5,1');
 });
 
 // ─── Customer ─────────────────────────────────────────────────────────────────
 
-Route::prefix('customer')->name('customer.')->middleware(['auth', 'role:customer'])->group(function () {
+Route::prefix('customer')->name('customer.')->middleware(['auth', 'active', 'verified', 'role:customer'])->group(function () {
     Route::get('/', [CustomerDashboard::class, 'index'])->name('dashboard');
 
     // Orders
     Route::get('/orders', [CustomerOrder::class, 'index'])->name('orders.index');
     Route::get('/orders/create', [CustomerOrder::class, 'create'])->name('orders.create');
-    Route::post('/orders', [CustomerOrder::class, 'store'])->name('orders.store');
+    Route::post('/orders', [CustomerOrder::class, 'store'])->name('orders.store')->middleware('throttle:10,1');
     Route::get('/orders/{order}', [CustomerOrder::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/accept', [CustomerOrder::class, 'accept'])->name('orders.accept');
     Route::patch('/orders/{order}/revision', [CustomerOrder::class, 'requestRevision'])->name('orders.revision');

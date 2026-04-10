@@ -55,16 +55,38 @@
             <p class="text-sm text-gray-500">Semua berjalan lancar!</p>
         </div>
         @else
-        <div class="overflow-x-auto">
+        {{-- Mobile Card View --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @foreach($conversations as $conv)
+            @php
+                $statusColor = match($conv->status) { 'ai' => 'bg-indigo-100 text-indigo-700', 'human' => 'bg-yellow-100 text-yellow-700', 'closed' => 'bg-green-100 text-green-700', default => 'bg-gray-100 text-gray-600' };
+                $statusIcon = match($conv->status) { 'ai' => 'fa-robot', 'human' => 'fa-hourglass-half', 'closed' => 'fa-check-circle', default => 'fa-circle' };
+                $statusText = match($conv->status) { 'ai' => 'AI', 'human' => 'Agen', 'closed' => 'Selesai', default => $conv->status };
+            @endphp
+            <a href="{{ route('admin.customer-service.show', $conv->id) }}" class="block px-4 py-4 hover:bg-gray-50/50 transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-900">{{ optional($conv->user)->name }}</span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
+                        <i class="fas {{ $statusIcon }} text-[10px]"></i> {{ $statusText }}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-600 truncate mb-1">{{ $conv->subject ?? '—' }}</div>
+                <div class="text-xs text-gray-400">{{ $conv->updated_at->diffForHumans() }}</div>
+            </a>
+            @endforeach
+        </div>
+
+        {{-- Desktop Table View --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Pengguna</th>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Topik</th>
                         <th class="text-left px-5 py-3 font-semibold text-gray-600">Status</th>
-                        <th class="text-left px-5 py-3 font-semibold text-gray-600">Agen</th>
-                        <th class="text-left px-5 py-3 font-semibold text-gray-600">Pesan Terakhir</th>
-                        <th class="text-left px-5 py-3 font-semibold text-gray-600">Waktu</th>
+                        <th class="text-left px-5 py-3 font-semibold text-gray-600 hidden md:table-cell">Agen</th>
+                        <th class="text-left px-5 py-3 font-semibold text-gray-600 hidden md:table-cell">Pesan Terakhir</th>
+                        <th class="text-left px-5 py-3 font-semibold text-gray-600 hidden md:table-cell">Waktu</th>
                         <th class="px-5 py-3"></th>
                     </tr>
                 </thead>
@@ -86,9 +108,9 @@
                             <i class="fas {{ $statusIcon }} text-[10px]"></i> {{ $statusText }}
                         </span>
                     </td>
-                    <td class="px-5 py-3 text-gray-500">{{ optional($conv->agent)->name ?? '—' }}</td>
-                    <td class="px-5 py-3 text-gray-500 max-w-[200px] truncate">{{ optional($conv->lastMessage)->message ? Str::limit($conv->lastMessage->message, 60) : '—' }}</td>
-                    <td class="px-5 py-3 text-gray-400 text-xs">{{ $conv->updated_at->diffForHumans() }}</td>
+                    <td class="px-5 py-3 text-gray-500 hidden md:table-cell">{{ optional($conv->agent)->name ?? '—' }}</td>
+                    <td class="px-5 py-3 text-gray-500 max-w-[200px] truncate hidden md:table-cell">{{ optional($conv->lastMessage)->message ? Str::limit($conv->lastMessage->message, 60) : '—' }}</td>
+                    <td class="px-5 py-3 text-gray-400 text-xs hidden md:table-cell">{{ $conv->updated_at->diffForHumans() }}</td>
                     <td class="px-5 py-3">
                         <a href="{{ route('admin.customer-service.show', $conv->id) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
                     </td>

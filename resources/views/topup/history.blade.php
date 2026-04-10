@@ -3,14 +3,14 @@
 @section('content')
 <div class="max-w-5xl mx-auto">
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
             <a href="{{ route('wallet.index') }}" class="text-sm text-gray-500 hover:text-blue-600 transition inline-flex items-center gap-1.5 mb-2">
                 <i class="fas fa-arrow-left"></i> Back to Wallet
             </a>
             <h1 class="text-2xl font-bold text-gray-900">Top-Up History</h1>
         </div>
-        <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2">
+        <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2 self-start sm:self-auto">
             <i class="fas fa-plus"></i> New Top Up
         </a>
     </div>
@@ -44,11 +44,45 @@
 
     {{-- History Table --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
+        {{-- Mobile Card View --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($topUps as $topUp)
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-semibold text-gray-900">Rp {{ number_format($topUp->amount, 0, ',', '.') }}</span>
+                    @php
+                        $badge = match($topUp->status) {
+                            'success' => 'bg-green-100 text-green-700',
+                            'pending' => 'bg-yellow-100 text-yellow-700',
+                            default => 'bg-red-100 text-red-700',
+                        };
+                    @endphp
+                    <span class="{{ $badge }} text-xs font-semibold px-2.5 py-1 rounded-full">{{ strtoupper($topUp->status) }}</span>
+                </div>
+                <div class="text-xs text-gray-500 mb-1">{{ $topUp->payment_type ? str_replace('_', ' ', ucfirst($topUp->payment_type)) : '-' }}</div>
+                <div class="flex items-center justify-between text-xs text-gray-400">
+                    <span>{{ $topUp->created_at->format('d M Y, H:i') }}</span>
+                    @if($topUp->isPending() && $topUp->snap_token)
+                        <a href="{{ route('wallet.topup.finish', $topUp->id) }}" class="text-blue-600 hover:text-blue-700 font-medium">Check Status</a>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="py-16 text-center">
+                <div class="text-4xl text-gray-300 mb-3"><i class="fas fa-clipboard-list"></i></div>
+                <div class="font-semibold text-gray-600 mb-1">No top-up records yet</div>
+                <div class="text-sm text-gray-400 mb-4">Make your first top-up to see history here.</div>
+                <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition">Top Up Now</a>
+            </div>
+            @endforelse
+        </div>
+
+        {{-- Desktop Table View --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
                     <tr>
-                        <th class="px-5 py-3 text-left font-medium">Order ID</th>
+                        <th class="px-5 py-3 text-left font-medium hidden md:table-cell">Order ID</th>
                         <th class="px-5 py-3 text-left font-medium">Amount</th>
                         <th class="px-5 py-3 text-left font-medium">Method</th>
                         <th class="px-5 py-3 text-left font-medium">Status</th>
@@ -59,7 +93,7 @@
                 <tbody class="divide-y divide-gray-50">
                 @forelse($topUps as $topUp)
                 <tr class="hover:bg-gray-50/50">
-                    <td class="px-5 py-3 font-mono text-xs text-gray-700">{{ $topUp->order_id }}</td>
+                    <td class="px-5 py-3 font-mono text-xs text-gray-700 hidden md:table-cell">{{ $topUp->order_id }}</td>
                     <td class="px-5 py-3 font-semibold text-gray-900">Rp {{ number_format($topUp->amount, 0, ',', '.') }}</td>
                     <td class="px-5 py-3 text-gray-600">{{ $topUp->payment_type ? str_replace('_', ' ', ucfirst($topUp->payment_type)) : '-' }}</td>
                     <td class="px-5 py-3">

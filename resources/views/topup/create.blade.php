@@ -32,7 +32,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Select Amount</label>
-                    <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                         @foreach([10000, 25000, 50000, 100000, 250000, 500000] as $preset)
                         <button type="button" onclick="setAmount({{ $preset }})" id="preset-{{ $preset }}"
                                 class="border-2 border-gray-200 hover:border-blue-500 rounded-xl py-2.5 text-sm font-semibold text-gray-700 transition focus:outline-none">

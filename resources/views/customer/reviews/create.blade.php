@@ -24,7 +24,7 @@
                 @csrf
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-3">Your Rating</label>
-                    <div class="grid grid-cols-5 gap-2" x-data="{ rating: {{ old('rating', 0) }} }">
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2" x-data="{ rating: {{ old('rating', 0) }} }">
                         @for($i = 1; $i <= 5; $i++)
                         <label class="cursor-pointer" :class="rating >= {{ $i }} ? 'ring-2 ring-yellow-400 bg-yellow-50' : 'bg-gray-50 hover:bg-yellow-50'"
                                class="rounded-xl p-3 text-center border border-gray-200 transition">

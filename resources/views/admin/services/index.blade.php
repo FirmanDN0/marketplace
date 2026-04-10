@@ -27,34 +27,64 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto">
+    {{-- Mobile Card View --}}
+    <div class="sm:hidden divide-y divide-gray-100">
+        @forelse($services as $svc)
+        <div class="px-4 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-800 truncate flex-1 mr-2">{{ $svc->title }}</span>
+                @php $sc = match($svc->status) { 'active' => 'bg-green-100 text-green-700', 'rejected','deleted' => 'bg-red-100 text-red-700', 'paused' => 'bg-yellow-100 text-yellow-700', default => 'bg-gray-100 text-gray-600' }; @endphp
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ ucfirst($svc->status) }}</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-1">{{ optional($svc->provider)->name }} &middot; {{ optional($svc->category)->name }}</div>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center gap-1"><i class="fas fa-star text-yellow-400"></i> {{ number_format($svc->avg_rating, 1) }}</span>
+                    <span>{{ $svc->total_orders }} orders</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.services.show', $svc->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition"><i class="fas fa-eye text-xs"></i></a>
+                    <form method="POST" action="{{ route('admin.services.destroy', $svc->id) }}" onsubmit="return confirm('Delete this service?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"><i class="fas fa-trash text-xs"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="px-4 py-12 text-center text-gray-400">No services found.</div>
+        @endforelse
+    </div>
+
+    {{-- Desktop Table View --}}
+    <div class="hidden sm:block overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                    <th class="px-6 py-3 font-medium">Title</th>
-                    <th class="px-6 py-3 font-medium">Provider</th>
-                    <th class="px-6 py-3 font-medium">Category</th>
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium">Rating</th>
-                    <th class="px-6 py-3 font-medium">Orders</th>
-                    <th class="px-6 py-3 font-medium">Actions</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Title</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Provider</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden lg:table-cell">Category</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Status</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Rating</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Orders</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($services as $svc)
                 <tr class="hover:bg-gray-50/50 transition">
-                    <td class="px-6 py-4 text-sm font-medium text-gray-800 max-w-[250px] truncate">{{ $svc->title }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{{ optional($svc->provider)->name }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ optional($svc->category)->name }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm font-medium text-gray-800 max-w-[250px] truncate">{{ $svc->title }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600 hidden md:table-cell">{{ optional($svc->provider)->name }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-500 hidden lg:table-cell">{{ optional($svc->category)->name }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         @php $sc = match($svc->status) { 'active' => 'bg-green-100 text-green-700', 'rejected','deleted' => 'bg-red-100 text-red-700', 'paused' => 'bg-yellow-100 text-yellow-700', default => 'bg-gray-100 text-gray-600' }; @endphp
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ ucfirst($svc->status) }}</span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-600">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600">
                         <span class="flex items-center gap-1"><i class="fas fa-star text-yellow-400 text-xs"></i> {{ number_format($svc->avg_rating, 1) }}</span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{{ $svc->total_orders }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600 hidden md:table-cell">{{ $svc->total_orders }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         <div class="flex items-center gap-2">
                             <a href="{{ route('admin.services.show', $svc->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition"><i class="fas fa-eye text-xs"></i></a>
                             <form method="POST" action="{{ route('admin.services.destroy', $svc->id) }}" onsubmit="return confirm('Delete this service?')">

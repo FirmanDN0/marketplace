@@ -14,11 +14,11 @@
 </div>
 
 {{-- Stats Cards --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
     @php $statCards = [
-        ['label' => 'Total Revenue', 'value' => 'Rp '.number_format($stats['total_earned'], 0, ',', '.'), 'sub' => '+12.5% from last month', 'subColor' => 'text-green-600', 'icon' => 'fa-dollar-sign', 'iconBg' => 'bg-green-100 text-green-600', 'borderColor' => 'border-green-200'],
+        ['label' => 'Available Balance', 'value' => 'Rp '.number_format($stats['balance'], 0, ',', '.'), 'sub' => 'Total earned: Rp '.number_format($stats['total_earned'], 0, ',', '.'), 'subColor' => 'text-green-600', 'icon' => 'fa-wallet', 'iconBg' => 'bg-green-100 text-green-600', 'borderColor' => 'border-green-200'],
         ['label' => 'Active Orders', 'value' => $stats['active_orders'], 'sub' => $stats['total_orders'].' total orders', 'subColor' => 'text-blue-600', 'icon' => 'fa-clipboard-check', 'iconBg' => 'bg-blue-100 text-blue-600', 'borderColor' => 'border-blue-200'],
-        ['label' => 'Total Views', 'value' => number_format($stats['total_services'] * 115), 'sub' => '+5.2% from last week', 'subColor' => 'text-green-600', 'icon' => 'fa-users', 'iconBg' => 'bg-purple-100 text-purple-600', 'borderColor' => 'border-purple-200'],
+        ['label' => 'Completed Orders', 'value' => $stats['completed_orders'], 'sub' => $stats['active_services'].' active services', 'subColor' => 'text-green-600', 'icon' => 'fa-check-circle', 'iconBg' => 'bg-purple-100 text-purple-600', 'borderColor' => 'border-purple-200'],
         ['label' => 'Rating', 'value' => number_format($stats['avg_rating'], 1), 'sub' => 'Based on '.$stats['completed_orders'].' reviews', 'subColor' => 'text-gray-500', 'icon' => 'fa-star', 'iconBg' => 'bg-yellow-100 text-yellow-600', 'borderColor' => 'border-yellow-200'],
     ]; @endphp
 
@@ -38,33 +38,63 @@
 
 {{-- Recent Orders --}}
 <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
         <h3 class="font-bold text-gray-900">Recent Orders</h3>
         <a href="{{ route('provider.orders.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-semibold transition">View All</a>
     </div>
-    <div class="overflow-x-auto">
+
+    {{-- Mobile Card View --}}
+    <div class="sm:hidden divide-y divide-gray-50">
+        @forelse($recentOrders as $order)
+        <a href="{{ route('provider.orders.show', $order->id) }}" class="block px-4 py-4 hover:bg-gray-50/50 transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-blue-600">#{{ $order->order_number }}</span>
+                @php $colors = match($order->status) {
+                    'completed' => 'bg-green-100 text-green-700',
+                    'in_progress','paid' => 'bg-blue-100 text-blue-700',
+                    'cancelled','disputed' => 'bg-red-100 text-red-700',
+                    'delivered' => 'bg-cyan-100 text-cyan-700',
+                    default => 'bg-yellow-100 text-yellow-700'
+                }; @endphp
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $colors }}">{{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
+            </div>
+            <p class="text-sm text-gray-700 truncate mb-1">{{ optional($order->service)->title }}</p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>{{ optional($order->customer)->name }}</span>
+                <span class="font-semibold text-gray-800">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</span>
+            </div>
+        </a>
+        @empty
+        <div class="px-4 py-12 text-center text-gray-400">
+            <div class="text-3xl mb-2"><i class="fas fa-inbox"></i></div>
+            No orders yet.
+        </div>
+        @endforelse
+    </div>
+
+    {{-- Desktop Table View --}}
+    <div class="hidden sm:block overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="text-left text-xs uppercase tracking-wider text-gray-400 border-b border-gray-100">
-                    <th class="px-6 py-3 font-medium">Order ID</th>
-                    <th class="px-6 py-3 font-medium">Service</th>
-                    <th class="px-6 py-3 font-medium">Buyer</th>
-                    <th class="px-6 py-3 font-medium">Due Date</th>
-                    <th class="px-6 py-3 font-medium">Amount</th>
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium w-10"></th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Order ID</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Service</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Buyer</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium hidden md:table-cell">Due Date</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Amount</th>
+                    <th class="px-4 lg:px-6 py-3 font-medium">Status</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($recentOrders as $order)
                 <tr class="hover:bg-gray-50/50 transition">
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4">
                         <a href="{{ route('provider.orders.show', $order->id) }}" class="text-sm font-semibold text-blue-600 hover:text-blue-700">
                             #{{ $order->order_number }}
                         </a>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-600 max-w-[200px] truncate">{{ optional($order->service)->title }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600 max-w-[200px] truncate">{{ optional($order->service)->title }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         <div class="flex items-center gap-2">
                             <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-semibold">
                                 {{ strtoupper(substr(optional($order->customer)->name ?? 'U', 0, 1)) }}
@@ -72,9 +102,9 @@
                             <span class="text-sm text-gray-700">{{ optional($order->customer)->name }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ optional($order->delivery_deadline)->format('M d, Y') }}</td>
-                    <td class="px-6 py-4 text-sm font-semibold text-gray-800">${{ number_format($order->provider_earning / 15000, 2) }}</td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-500 hidden md:table-cell">{{ optional($order->delivery_deadline)->format('M d, Y') }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm font-semibold text-gray-800">Rp {{ number_format($order->provider_earning, 0, ',', '.') }}</td>
+                    <td class="px-4 lg:px-6 py-4">
                         @php $colors = match($order->status) {
                             'completed' => 'bg-green-100 text-green-700',
                             'in_progress','paid' => 'bg-blue-100 text-blue-700',
@@ -86,21 +116,10 @@
                             {{ ucfirst(str_replace('_',' ',$order->status)) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="p-1 text-gray-400 hover:text-gray-600 rounded transition">
-                                <i class="fas fa-ellipsis-v text-sm"></i>
-                            </button>
-                            <div x-show="open" @click.away="open = false" x-transition
-                                 class="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20">
-                                <a href="{{ route('provider.orders.show', $order->id) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">View Details</a>
-                            </div>
-                        </div>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
                         <div class="text-3xl mb-2"><i class="fas fa-inbox"></i></div>
                         No orders yet.
                     </td>

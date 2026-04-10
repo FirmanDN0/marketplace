@@ -52,7 +52,7 @@ class MessageController extends Controller
 
         $data = $request->validate([
             'message_text' => 'required_without:attachment|nullable|string|max:5000',
-            'attachment'   => 'nullable|file|max:10240',
+            'attachment'   => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip,rar,txt,csv|max:10240',
         ]);
 
         $attachmentPath = null;
