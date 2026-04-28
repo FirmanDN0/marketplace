@@ -4,9 +4,8 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center py-12 px-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-2xl font-bold text-blue-600 mb-4">
-                <span class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center text-lg font-bold">S</span>
-                ServeMix
+            <a href="{{ route('home') }}" class="inline-flex justify-center mb-6">
+                <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-12 w-auto object-contain">
             </a>
             <h1 class="text-2xl font-bold text-gray-900">Lupa Password?</h1>
             <p class="text-gray-500 text-sm mt-1">Masukkan email kamu, kami akan kirim link reset password</p>

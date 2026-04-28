@@ -3,12 +3,6 @@
 @section('content')
 <div class="max-w-2xl mx-auto">
 
-    <div class="mb-6">
-        <a href="{{ route('wallet.index') }}" class="text-sm text-gray-500 hover:text-blue-600 transition inline-flex items-center gap-1.5 mb-2">
-            <i class="fas fa-arrow-left"></i> Back to Wallet
-        </a>
-    </div>
-
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100">
             <h2 class="text-xl font-bold text-gray-900">Request Withdrawal</h2>

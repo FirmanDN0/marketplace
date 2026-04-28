@@ -1,16 +1,17 @@
 @extends('layouts.app')
 @section('title', $provider->name . ' - Provider Profile')
+
+@section('meta_title', $provider->name . ' - ServeMix Provider')
+@section('meta_description', Str::limit($provider->profile?->bio ?? 'Checkout my provider profile and services on ServeMix.', 150))
+@if($provider->avatar)
+    @section('meta_image', url(Storage::url($provider->avatar)))
+@endif
+
 @section('content')
 
 <div class="bg-white min-h-screen">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    {{-- Back --}}
-    <nav class="flex items-center gap-2 text-sm text-gray-400 mb-6">
-        <a href="{{ route('services.index') }}" class="hover:text-blue-600 transition flex items-center gap-1">
-            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Services
-        </a>
-    </nav>
 
     {{-- Provider Header --}}
     <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 md:p-8 mb-8 text-white">

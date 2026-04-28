@@ -21,40 +21,28 @@ class CustomerServiceController extends Controller
         return view('customer-service.index', compact('conversations'));
     }
 
-    public function create()
-    {
-        return view('customer-service.create');
-    }
 
-    public function store(Request $request)
+    public function start()
     {
-        $data = $request->validate([
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:3000',
-        ]);
-
         $user = auth()->user();
 
         $conversation = CsConversation::create([
             'user_id' => $user->id,
-            'subject' => $data['subject'],
+            'subject' => 'Pusat Bantuan AI',
             'status'  => 'ai',
         ]);
 
-        // Save user's first message
+        // Welcome message
         CsMessage::create([
             'conversation_id' => $conversation->id,
-            'sender_id'       => $user->id,
-            'sender_type'     => 'user',
-            'message'         => $data['message'],
+            'sender_id'       => null,
+            'sender_type'     => 'ai',
+            'message'         => "Halo **{$user->name}**! 👋\n\nSaya AI Customer Service yang siap membantu Anda 24/7. Silakan pilih salah satu pertanyaan di bawah atau ketik pertanyaan Anda sendiri.",
         ]);
 
-        // Get AI response
-        $this->handleAiReply($conversation, [], $data['message']);
-
-        return redirect()->route('customer-service.show', $conversation->id)
-            ->with('success', 'Percakapan berhasil dimulai!');
+        return redirect()->route('customer-service.show', $conversation->id);
     }
+
 
     public function show(CsConversation $conversation)
     {
@@ -133,6 +121,31 @@ class CustomerServiceController extends Controller
 
     private function handleAiReply(CsConversation $conversation, array $history, string $userMessage): void
     {
+        // 1. Check Internal Templates First
+        $templates = [
+            'bagaimana cara memesan layanan' => 'Untuk memesan layanan, Anda dapat menelusuri kategori yang tersedia di beranda, pilih layanan yang Anda inginkan, pilih paket (Basic/Standard/Premium), lalu klik tombol **Pesan Sekarang**. Setelah itu, Anda akan diarahkan ke halaman pembayaran.',
+            'bagaimana cara mengisi saldo wallet' => 'Anda dapat mengisi saldo wallet dengan cara klik ikon **Dompet** di navbar, lalu pilih menu **Top Up**. Masukkan jumlah saldo yang diinginkan dan lakukan pembayaran melalui metode yang tersedia (VA Bank, QRIS, atau E-wallet).',
+            'apa itu dana escrow' => 'Dana escrow adalah sistem keamanan kami di mana dana pembayaran Anda akan ditahan sementara oleh platform. Dana tersebut baru akan diteruskan ke provider setelah Anda mengonfirmasi bahwa pekerjaan telah selesai dan sesuai dengan keinginan Anda.',
+            'bagaimana jika hasil pekerjaan tidak sesuai' => 'Jika hasil pekerjaan tidak sesuai dengan kesepakatan awal, Anda dapat mengajukan **Dispute** pada halaman detail pesanan. Tim Customer Service kami akan membantu memediasi antara Anda dan provider untuk menemukan solusi terbaik (revisi atau refund).',
+            'cara mendaftar jadi provider' => 'Untuk menjadi provider, silakan buka menu profil Anda dan pilih **Daftar sebagai Provider**. Anda akan diminta melengkapi data diri, keahlian, dan portofolio sebelum dapat mulai menjual layanan.',
+        ];
+
+        $lowerMessage = strtolower(trim($userMessage));
+        $cleanedMessage = preg_replace('/[^a-z0-9 ]/', '', $lowerMessage);
+
+        foreach ($templates as $trigger => $reply) {
+            if (str_contains($cleanedMessage, strtolower($trigger))) {
+                CsMessage::create([
+                    'conversation_id' => $conversation->id,
+                    'sender_id'       => null,
+                    'sender_type'     => 'ai',
+                    'message'         => $reply,
+                ]);
+                return;
+            }
+        }
+
+        // 2. Fallback to Gemini AI
         $gemini   = new GeminiService();
         $aiText   = $gemini->chat($history, $userMessage);
         $escalate = $gemini->shouldEscalate($aiText, $userMessage);

@@ -4,7 +4,6 @@
 <div class="max-w-2xl mx-auto">
 
     <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('admin.users.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
         <h1 class="text-2xl font-bold text-gray-900">Edit User: {{ $user->name }}</h1>
     </div>
 

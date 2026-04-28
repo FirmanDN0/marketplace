@@ -6,7 +6,6 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div class="flex items-center gap-4">
-            <a href="{{ route('admin.customer-service.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
             <div>
                 <h1 class="text-xl font-bold text-gray-900">{{ $conversation->subject ?? 'Percakapan' }}</h1>
                 <p class="text-sm text-gray-500">Pengguna: <span class="font-medium text-gray-700">{{ optional($conversation->user)->name }}</span> ({{ optional($conversation->user)->email }})</p>
@@ -114,9 +113,6 @@
             </button>
         </form>
         @endif
-        <a href="{{ route('admin.customer-service.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-medium transition flex items-center gap-1.5">
-            <i class="fas fa-arrow-left text-xs"></i> Kembali ke Daftar
-        </a>
     </div>
 </div>
 

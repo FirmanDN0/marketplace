@@ -5,9 +5,6 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
-            <a href="{{ route('wallet.index') }}" class="text-sm text-gray-500 hover:text-blue-600 transition inline-flex items-center gap-1.5 mb-2">
-                <i class="fas fa-arrow-left"></i> Back to Wallet
-            </a>
             <h1 class="text-2xl font-bold text-gray-900">Top-Up History</h1>
         </div>
         <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2 self-start sm:self-auto">

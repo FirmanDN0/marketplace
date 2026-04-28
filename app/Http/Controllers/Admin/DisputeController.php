@@ -32,24 +32,22 @@ class DisputeController extends Controller
     {
         $data = $request->validate([
             'resolution' => 'required|string|max:1000',
-            'status'     => 'required|in:resolved,closed',
-            'refund'     => 'nullable|in:1',
+            'action'     => 'required|in:refund_customer,release_to_provider',
         ]);
 
         $dispute->update([
             'resolution'  => $data['resolution'],
-            'status'      => $data['status'],
+            'status'      => 'resolved',
             'resolved_by' => auth()->id(),
             'resolved_at' => now(),
         ]);
 
-        // Process refund if requested
-        if (!empty($data['refund']) && $dispute->order) {
-            $order   = $dispute->order;
-            $payment = $order->payment;
-
-            if ($payment && $payment->status === 'success' && !in_array($order->status, ['cancelled', 'completed'])) {
-                (new OrderService())->cancel($order, auth()->id(), 'Dibatalkan oleh admin: ' . $data['resolution']);
+        if ($dispute->order && !in_array($dispute->order->status, ['cancelled', 'completed'])) {
+            if ($data['action'] === 'refund_customer') {
+                (new OrderService())->cancel($dispute->order, auth()->id(), 'Dispute resolved in favor of customer: ' . $data['resolution']);
+            } elseif ($data['action'] === 'release_to_provider') {
+                // Admin sides with provider, force completion
+                (new OrderService())->complete($dispute->order);
             }
         }
 
@@ -70,6 +68,6 @@ class DisputeController extends Controller
             ['dispute_id' => $dispute->id]
         );
 
-        return back()->with('success', 'Dispute resolved.');
+        return back()->with('success', 'Dispute resolved successfully.');
     }
 }

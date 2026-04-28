@@ -9,21 +9,23 @@ class Order extends Model
     protected $fillable = [
         'order_number', 'customer_id', 'provider_id', 'service_id', 'package_id',
         'price', 'platform_fee', 'provider_earning', 'status',
-        'delivery_deadline', 'notes', 'delivery_file', 'delivery_message',
+        'delivery_deadline', 'notes', 'requirements', 'requirements_file', 'requirements_submitted_at',
+        'delivery_file', 'delivery_message',
         'delivered_at', 'completed_at', 'cancelled_at', 'cancelled_by', 'cancelled_reason',
         'revision_count', 'revision_message', 'revision_requested_at',
     ];
 
     protected $casts = [
-        'price'             => 'decimal:2',
-        'platform_fee'      => 'decimal:2',
-        'provider_earning'  => 'decimal:2',
-        'delivery_deadline' => 'datetime',
-        'delivered_at'           => 'datetime',
-        'completed_at'           => 'datetime',
-        'cancelled_at'           => 'datetime',
-        'revision_requested_at'  => 'datetime',
-        'revision_count'         => 'integer',
+        'price'                     => 'decimal:2',
+        'platform_fee'              => 'decimal:2',
+        'provider_earning'          => 'decimal:2',
+        'delivery_deadline'         => 'datetime',
+        'delivered_at'              => 'datetime',
+        'completed_at'              => 'datetime',
+        'cancelled_at'              => 'datetime',
+        'revision_requested_at'     => 'datetime',
+        'requirements_submitted_at' => 'datetime',
+        'revision_count'            => 'integer',
     ];
 
     public function customer()
@@ -71,6 +73,7 @@ class Order extends Model
     // ------------------------------------------------------------------
     public function isPendingPayment(): bool { return $this->status === 'pending_payment'; }
     public function isPaid(): bool           { return $this->status === 'paid'; }
+    public function isWaitingRequirements(): bool { return $this->status === 'paid' && is_null($this->requirements_submitted_at); }
     public function isInProgress(): bool     { return $this->status === 'in_progress'; }
     public function isDelivered(): bool      { return $this->status === 'delivered'; }
     public function isCompleted(): bool      { return $this->status === 'completed'; }

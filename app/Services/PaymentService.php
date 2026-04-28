@@ -166,7 +166,7 @@ class PaymentService
                 'order_id'               => $order->id,
                 'user_id'                => $order->customer_id,
                 'amount'                 => $order->price,
-                'payment_method'         => 'wallet',
+                'payment_method'         => 'balance',
                 'status'                 => 'success',
                 'paid_at'                => now(),
                 'gateway_transaction_id' => 'WALLET-' . $order->order_number,

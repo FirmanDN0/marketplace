@@ -15,7 +15,7 @@
         @forelse($services as $svc)
         <div class="px-4 py-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 truncate flex-1 mr-2">{{ $svc->title }}</span>
+                <a href="{{ route('provider.services.show', $svc) }}" class="text-sm font-medium text-gray-800 truncate flex-1 mr-2 hover:text-blue-600 transition">{{ $svc->title }}</a>
                 @php $sc = match($svc->status) { 'active' => 'bg-green-100 text-green-700', 'paused' => 'bg-yellow-100 text-yellow-700', 'rejected','deleted' => 'bg-red-100 text-red-700', default => 'bg-gray-100 text-gray-600' }; @endphp
                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ ucfirst($svc->status) }}</span>
             </div>
@@ -65,7 +65,9 @@
             <tbody class="divide-y divide-gray-50">
                 @forelse($services as $svc)
                 <tr class="hover:bg-gray-50/50 transition">
-                    <td class="px-4 lg:px-6 py-4 text-sm font-medium text-gray-800 max-w-[250px] truncate">{{ $svc->title }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm font-medium text-gray-800 max-w-[250px] truncate">
+                        <a href="{{ route('provider.services.show', $svc) }}" class="hover:text-blue-600 transition">{{ $svc->title }}</a>
+                    </td>
                     <td class="px-4 lg:px-6 py-4 text-sm text-gray-500 hidden md:table-cell">{{ optional($svc->category)->name }}</td>
                     <td class="px-4 lg:px-6 py-4">
                         @php $sc = match($svc->status) { 'active' => 'bg-green-100 text-green-700', 'paused' => 'bg-yellow-100 text-yellow-700', 'rejected','deleted' => 'bg-red-100 text-red-700', default => 'bg-gray-100 text-gray-600' }; @endphp

@@ -4,9 +4,6 @@
 
 <div class="max-w-4xl">
     <div class="flex items-center gap-4 mb-8">
-        <a href="{{ route('provider.services.index') }}" class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
-            <i class="fas fa-arrow-left text-sm"></i>
-        </a>
         <h1 class="text-2xl font-bold text-gray-900">Create New Service</h1>
     </div>
 

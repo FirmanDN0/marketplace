@@ -35,29 +35,7 @@ class OrderController extends Controller
         return view('provider.orders.show', compact('order'));
     }
 
-    public function startWork(Order $order)
-    {
-        if ($order->provider_id !== auth()->id()) {
-            abort(403);
-        }
 
-        if (!$order->isPaid()) {
-            return back()->withErrors(['error' => 'Order is not paid yet.']);
-        }
-
-        $order->update(['status' => 'in_progress']);
-
-        \App\Services\NotificationService::send(
-            $order->customer_id,
-            'order_in_progress',
-            'Work Started',
-            "Provider has started working on order #{$order->order_number}.",
-            ['order_id' => $order->id],
-            route('customer.orders.show', $order->id)
-        );
-
-        return back()->with('success', 'Order moved to In Progress.');
-    }
 
     public function deliver(Request $request, Order $order)
     {

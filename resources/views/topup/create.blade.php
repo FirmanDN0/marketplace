@@ -3,23 +3,12 @@
 @section('content')
 <div class="max-w-xl mx-auto">
 
-    <div class="mb-6">
-        <a href="{{ route('wallet.index') }}" class="text-sm text-gray-500 hover:text-blue-600 transition inline-flex items-center gap-1.5 mb-2">
-            <i class="fas fa-arrow-left"></i> Back to Wallet
-        </a>
-    </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100">
             <h2 class="text-xl font-bold text-gray-900">Top Up Balance</h2>
             <p class="text-gray-500 text-sm mt-1">Add funds to your wallet</p>
         </div>
-        <div class="p-6">
-
-            @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
-                    @foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach
-                </div>
             @endif
 
             <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 mb-6">
@@ -27,7 +16,7 @@
                 <div class="text-2xl font-bold text-blue-700">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
             </div>
 
-            <form method="POST" action="{{ route('wallet.topup.store') }}" class="space-y-5">
+            <form method="POST" action="{{ route('wallet.topup.store') }}" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
 
                 <div>
@@ -53,8 +42,9 @@
                     <span class="text-gray-400">Supports: Credit Card, Transfer, GoPay, QRIS, Alfamart, and more.</span>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition inline-flex items-center justify-center gap-2">
-                    Continue to Payment <i class="fas fa-arrow-right"></i>
+                <button type="submit" :disabled="submitting" :class="{'opacity-75 cursor-not-allowed': submitting}" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition inline-flex items-center justify-center gap-2">
+                    <span x-show="!submitting" class="inline-flex items-center gap-2">Continue to Payment <i class="fas fa-arrow-right"></i></span>
+                    <span x-show="submitting" x-cloak class="inline-flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
                 </button>
             </form>
         </div>

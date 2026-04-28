@@ -17,8 +17,6 @@ class OrderService
     public function create(int $customerId, Service $service, ServicePackage $package, ?string $notes = null): Order
     {
         return DB::transaction(function () use ($customerId, $service, $package, $notes) {
-            $deadline = now()->addDays($package->delivery_days);
-
             $order = Order::create([
                 'customer_id'     => $customerId,
                 'provider_id'     => $service->provider_id,
@@ -26,7 +24,7 @@ class OrderService
                 'package_id'      => $package->id,
                 'price'           => $package->price,
                 'status'          => 'pending_payment',
-                'delivery_deadline' => $deadline,
+                'delivery_deadline' => null, // Deadline starts when requirements are submitted
                 'notes'           => $notes,
             ]);
 

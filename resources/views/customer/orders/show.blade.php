@@ -5,7 +5,6 @@
 
     {{-- Header --}}
     <div class="flex items-center gap-4 mb-6 flex-wrap">
-        <a href="{{ route('customer.orders.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
         <h1 class="text-2xl font-bold text-gray-900">Order {{ $order->order_number }}</h1>
         @php $sc = match($order->status) { 'completed' => 'bg-green-100 text-green-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
         <span class="{{ $sc }} text-xs font-semibold px-3 py-1.5 rounded-full">{{ str_replace('_',' ',$order->status) }}</span>
@@ -14,10 +13,84 @@
         @endif
     </div>
 
+    {{-- Visual Order Timeline --}}
+    @if(!in_array($order->status, ['pending_payment', 'cancelled']))
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        @php
+            $steps = [
+                'paid' => ['icon' => 'fa-receipt', 'label' => 'Order Placed'],
+                'reqs' => ['icon' => 'fa-clipboard-list', 'label' => 'Requirements'],
+                'work' => ['icon' => 'fa-laptop-code', 'label' => 'In Progress'],
+                'done' => ['icon' => 'fa-box-open', 'label' => 'Delivered']
+            ];
+            
+            $currentStep = 1;
+            if ($order->requirements_submitted_at) $currentStep = 2;
+            if ($order->status === 'in_progress') $currentStep = 3;
+            if (in_array($order->status, ['delivered', 'completed', 'disputed'])) $currentStep = 4;
+        @endphp
+        
+        <div class="relative max-w-3xl mx-auto">
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-100">
+                <div style="width: {{ (($currentStep - 1) / 3) * 100 }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500"></div>
+            </div>
+            <div class="flex justify-between w-full absolute top-0 -mt-3.5">
+                @php $i = 1; @endphp
+                @foreach($steps as $key => $step)
+                    @php 
+                        $active = $currentStep >= $i;
+                        $color = $active ? 'text-blue-600' : 'text-gray-400';
+                        $bg = $active ? 'bg-blue-100' : 'bg-gray-50';
+                    @endphp
+                    <div class="flex flex-col items-center" style="width: 20px;">
+                        <div class="w-9 h-9 {{ $bg }} {{ $color }} rounded-full flex items-center justify-center mb-1.5 {{ $active ? 'ring-4 ring-white' : '' }} z-10 relative">
+                            <i class="fas {{ $step['icon'] }} text-sm"></i>
+                        </div>
+                        <span class="text-[11px] font-semibold {{ $color }} whitespace-nowrap">{{ $step['label'] }}</span>
+                    </div>
+                    @php $i++; @endphp
+                @endforeach
+            </div>
+        </div>
+        <div class="h-6"></div> {{-- spacer for absolute elements --}}
+    </div>
+    @endif
+
     @if($order->isPendingPayment())
     <div class="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between flex-wrap gap-3">
         <span class="text-yellow-700 text-sm font-medium"><i class="fas fa-exclamation-triangle mr-1"></i> This order awaits payment to begin.</span>
         <a href="{{ route('payment.show', $order->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">Pay Now</a>
+    </div>
+    @endif
+
+    @if($order->isWaitingRequirements())
+    <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 mb-6">
+        <div class="flex items-start gap-4">
+            <div class="bg-indigo-100 text-indigo-600 rounded-xl w-12 h-12 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-clipboard-list text-xl"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-indigo-900 mb-1">Action Required: Submit Your Requirements</h3>
+                <p class="text-indigo-700 text-sm mb-4">The provider needs your instructions and files before they can start working. The delivery timer will start once you submit these.</p>
+                
+                <form action="{{ route('customer.orders.requirements', $order->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-semibold text-indigo-900 mb-1.5">Project Brief / Instructions <span class="text-red-500">*</span></label>
+                        <textarea name="requirements" rows="4" required minlength="10" placeholder="Describe exactly what you need. Provide colors, references, or links..." class="w-full rounded-xl border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 px-4 py-3 text-sm resize-none"></textarea>
+                        @error('requirements') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-indigo-900 mb-1.5">Attach Files <span class="font-normal text-indigo-600">(Optional, max 20MB)</span></label>
+                        <input type="file" name="requirements_file" class="w-full text-sm text-indigo-700 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition">
+                        @error('requirements_file') <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition inline-flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Submit & Start Order
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
     @endif
 
@@ -70,6 +143,22 @@
                 </div>
             </div>
 
+            {{-- Requirements Submitted --}}
+            @if($order->requirements_submitted_at)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900"><i class="fas fa-clipboard-check text-green-600 mr-1"></i> Your Requirements</h3></div>
+                <div class="p-5">
+                    <p class="text-sm text-gray-700 mb-3 whitespace-pre-wrap">{{ $order->requirements }}</p>
+                    @if($order->requirements_file)
+                        <a href="{{ Storage::url($order->requirements_file) }}" target="_blank" class="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                            <i class="fas fa-paperclip"></i> View Attached File
+                        </a>
+                    @endif
+                    <p class="text-xs text-gray-400 mt-3">Submitted on: {{ $order->requirements_submitted_at->format('M d, Y H:i') }}</p>
+                </div>
+            </div>
+            @endif
+
             {{-- Delivery --}}
             @if($order->delivery_message)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -116,6 +205,21 @@
 
         {{-- Right Column - Actions --}}
         <div class="space-y-6">
+            {{-- Contact Provider --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Message Provider</h4></div>
+                <div class="p-5">
+                    <form method="POST" action="{{ route('messages.start') }}">
+                        @csrf
+                        <input type="hidden" name="provider_id" value="{{ $order->provider_id }}">
+                        <input type="hidden" name="service_id" value="{{ $order->service_id }}">
+                        <button type="submit" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-comment-dots"></i> Message {{ optional($order->provider)->name }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             @if($order->isDelivered())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Review Delivery</h4></div>

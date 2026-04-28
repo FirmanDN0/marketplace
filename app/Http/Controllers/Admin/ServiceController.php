@@ -44,7 +44,8 @@ class ServiceController extends Controller
             'service_status_update',
             'Service Status Updated',
             "Your service \"{$service->title}\" status has been changed to {$data['status']}.",
-            ['service_id' => $service->id]
+            ['service_id' => $service->id],
+            route('provider.services.show', $service->id)
         );
 
         return back()->with('success', 'Service status updated.');

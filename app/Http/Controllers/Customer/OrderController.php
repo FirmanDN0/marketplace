@@ -77,6 +77,48 @@ class OrderController extends Controller
         return redirect()->route('payment.show', $order->id);
     }
 
+    public function submitRequirements(Request $request, Order $order)
+    {
+        if ($order->customer_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (!$order->isWaitingRequirements()) {
+            return back()->withErrors(['error' => 'Requirements cannot be submitted for this order.']);
+        }
+
+        $data = $request->validate([
+            'requirements'      => 'required|string|min:10|max:3000',
+            'requirements_file' => 'nullable|file|mimes:zip,rar,pdf,doc,docx,jpg,png,fig,ai,psd|max:20480',
+        ]);
+
+        $filePath = null;
+        if ($request->hasFile('requirements_file')) {
+            $filePath = $request->file('requirements_file')->store('requirements', 'public');
+        }
+
+        $deadline = now()->addDays($order->package->delivery_days);
+
+        $order->update([
+            'requirements'              => $data['requirements'],
+            'requirements_file'         => $filePath,
+            'requirements_submitted_at' => now(),
+            'status'                    => 'in_progress',
+            'delivery_deadline'         => $deadline,
+        ]);
+
+        \App\Services\NotificationService::send(
+            $order->provider_id,
+            'order_in_progress',
+            'Requirements Submitted',
+            "Customer has submitted requirements for order #{$order->order_number}. The delivery timer has started.",
+            ['order_id' => $order->id],
+            route('provider.orders.show', $order->id)
+        );
+
+        return back()->with('success', 'Requirements submitted successfully! The provider has started working on your order.');
+    }
+
     public function accept(Order $order)
     {
         if ($order->customer_id !== auth()->id()) {

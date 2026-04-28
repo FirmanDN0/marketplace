@@ -41,7 +41,7 @@ use App\Http\Controllers\ProviderProfileController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
-Route::get('/provider/{username}', [ProviderProfileController::class, 'show'])->name('provider.profile');
+
 Route::get('/terms', [PageController::class, 'terms'])->name('pages.terms');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('pages.privacy');
 Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
@@ -93,6 +93,7 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/sync-counts', [NotificationController::class, 'syncCounts'])->name('notifications.sync-counts');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.all-read');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
@@ -111,8 +112,7 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
 
     // Customer Service (all authenticated users)
     Route::get('/customer-service', [CustomerServiceController::class, 'index'])->name('customer-service.index');
-    Route::get('/customer-service/new', [CustomerServiceController::class, 'create'])->name('customer-service.create');
-    Route::post('/customer-service', [CustomerServiceController::class, 'store'])->name('customer-service.store')->middleware('throttle:5,1');
+    Route::get('/customer-service/start', [CustomerServiceController::class, 'start'])->name('customer-service.start');
     Route::get('/customer-service/{conversation}', [CustomerServiceController::class, 'show'])->name('customer-service.show');
     Route::post('/customer-service/{conversation}/messages', [CustomerServiceController::class, 'sendMessage'])->name('customer-service.message')->middleware('throttle:20,1');
     Route::post('/customer-service/{conversation}/escalate', [CustomerServiceController::class, 'escalate'])->name('customer-service.escalate');
@@ -200,6 +200,7 @@ Route::prefix('provider')->name('provider.')->middleware(['auth', 'active', 'ver
     Route::get('/services', [ProviderService::class, 'index'])->name('services.index');
     Route::get('/services/create', [ProviderService::class, 'create'])->name('services.create');
     Route::post('/services', [ProviderService::class, 'store'])->name('services.store');
+    Route::get('/services/{service}', [ProviderService::class, 'show'])->name('services.show');
     Route::get('/services/{service}/edit', [ProviderService::class, 'edit'])->name('services.edit');
     Route::put('/services/{service}', [ProviderService::class, 'update'])->name('services.update');
     Route::post('/services/{service}/toggle', [ProviderService::class, 'toggleStatus'])->name('services.toggle');
@@ -208,7 +209,6 @@ Route::prefix('provider')->name('provider.')->middleware(['auth', 'active', 'ver
     // Orders
     Route::get('/orders', [ProviderOrder::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [ProviderOrder::class, 'show'])->name('orders.show');
-    Route::patch('/orders/{order}/start', [ProviderOrder::class, 'startWork'])->name('orders.start');
     Route::patch('/orders/{order}/deliver', [ProviderOrder::class, 'deliver'])->name('orders.deliver');
     Route::patch('/orders/{order}/cancel', [ProviderOrder::class, 'cancel'])->name('orders.cancel');
 
@@ -232,6 +232,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'active', 'ver
     Route::get('/orders/create', [CustomerOrder::class, 'create'])->name('orders.create');
     Route::post('/orders', [CustomerOrder::class, 'store'])->name('orders.store')->middleware('throttle:10,1');
     Route::get('/orders/{order}', [CustomerOrder::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/requirements', [CustomerOrder::class, 'submitRequirements'])->name('orders.requirements');
     Route::patch('/orders/{order}/accept', [CustomerOrder::class, 'accept'])->name('orders.accept');
     Route::patch('/orders/{order}/revision', [CustomerOrder::class, 'requestRevision'])->name('orders.revision');
     Route::patch('/orders/{order}/cancel', [CustomerOrder::class, 'cancel'])->name('orders.cancel');
@@ -241,3 +242,6 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'active', 'ver
     Route::get('/orders/{order}/review', [CustomerReview::class, 'create'])->name('reviews.create');
     Route::post('/orders/{order}/review', [CustomerReview::class, 'store'])->name('reviews.store');
 });
+
+// ─── Public Provider Profile ──────────────────────────────────────────────────
+Route::get('/provider/{username}', [ProviderProfileController::class, 'show'])->name('provider.profile');

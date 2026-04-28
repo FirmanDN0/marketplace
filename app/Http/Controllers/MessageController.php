@@ -93,18 +93,27 @@ class MessageController extends Controller
     public function startOrFind(Request $request)
     {
         $data = $request->validate([
-            'provider_id' => 'required|exists:users,id',
+            'provider_id' => 'nullable|exists:users,id',
+            'customer_id' => 'nullable|exists:users,id',
             'service_id'  => 'nullable|exists:services,id',
         ]);
 
-        $customer   = auth()->user();
-        $providerId = (int) $data['provider_id'];
-        $serviceId  = $data['service_id'] ?? null;
+        $me = auth()->user();
+
+        if ($me->role === 'customer') {
+            $customerId = $me->id;
+            $providerId = $data['provider_id'] ?? null;
+        } else {
+            $customerId = $data['customer_id'] ?? null;
+            $providerId = $me->id;
+        }
+
+        abort_if(!$customerId || !$providerId, 400, 'Missing participant ID.');
 
         $conversation = Conversation::firstOrCreate([
-            'customer_id' => $customer->id,
+            'customer_id' => $customerId,
             'provider_id' => $providerId,
-            'service_id'  => $serviceId,
+            'service_id'  => $data['service_id'] ?? null,
         ]);
 
         return redirect()->route('messages.show', $conversation->id);

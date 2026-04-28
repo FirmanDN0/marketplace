@@ -4,7 +4,6 @@
 <div class="max-w-6xl mx-auto">
 
     <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('admin.orders.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
         <div class="flex items-center gap-3">
             <h1 class="text-2xl font-bold text-gray-900">Order {{ $order->order_number }}</h1>
             @php $sc = match($order->status) { 'completed' => 'bg-green-100 text-green-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp

@@ -4,7 +4,6 @@
 <div class="max-w-6xl mx-auto">
 
     <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('admin.disputes.index') }}" class="text-gray-400 hover:text-blue-600 transition"><i class="fas fa-arrow-left text-lg"></i></a>
         <div class="flex items-center gap-3">
             <h1 class="text-2xl font-bold text-gray-900">Dispute #{{ $dispute->id }}</h1>
             @php $sc = match($dispute->status) { 'resolved','closed' => 'bg-green-100 text-green-700', 'under_review' => 'bg-yellow-100 text-yellow-700', default => 'bg-red-100 text-red-700' }; @endphp
@@ -52,30 +51,34 @@
                 <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Resolve Dispute</h4></div>
                 <div class="p-5">
                     <form method="POST" action="{{ route('admin.disputes.resolve', $dispute->id) }}" class="space-y-4">
-                        @csrf @method('PATCH')
+                        @csrf
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Resolution</label>
-                            <textarea name="resolution" rows="5" required placeholder="Describe the resolution decision…"
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Resolution Notes (Visible to both)</label>
+                            <textarea name="resolution" rows="4" required placeholder="Explain your final decision..."
                                       class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Close as</label>
-                            <select name="status" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="resolved">Resolved</option>
-                                <option value="closed">Closed</option>
-                            </select>
+                        
+                        <div class="grid grid-cols-1 gap-3 pt-2">
+                            <button type="submit" name="action" value="refund_customer" class="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-3 rounded-xl text-sm font-semibold transition text-left relative overflow-hidden group" onsubmit="return confirm('Are you sure you want to refund the customer?')">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-red-100 text-red-600 rounded-lg p-2"><i class="fas fa-undo"></i></div>
+                                    <div>
+                                        <div class="font-bold">Side with Customer</div>
+                                        <div class="text-xs text-red-600/80 font-normal mt-0.5">Cancel order & refund Rp {{ number_format(optional($dispute->order)->price ?? 0, 0, ',', '.') }}</div>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button type="submit" name="action" value="release_to_provider" class="w-full bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-4 py-3 rounded-xl text-sm font-semibold transition text-left relative overflow-hidden group" onsubmit="return confirm('Are you sure you want to release funds to the provider?')">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-green-100 text-green-600 rounded-lg p-2"><i class="fas fa-check-circle"></i></div>
+                                    <div>
+                                        <div class="font-bold">Side with Provider</div>
+                                        <div class="text-xs text-green-600/80 font-normal mt-0.5">Complete order & release earnings</div>
+                                    </div>
+                                </div>
+                            </button>
                         </div>
-                        @if($dispute->order && $dispute->order->payment && $dispute->order->payment->status === 'success' && !in_array($dispute->order->status, ['cancelled', 'completed']))
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
-                            <label class="flex items-start gap-2 cursor-pointer">
-                                <input type="checkbox" name="refund" value="1" class="mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500">
-                                <span class="text-sm text-yellow-800"><strong>Refund ke customer</strong> — Rp {{ number_format($dispute->order->price, 0, ',', '.') }} akan dikembalikan ke saldo customer dan order dibatalkan.</span>
-                            </label>
-                        </div>
-                        @endif
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
-                            <i class="fas fa-check"></i> Submit Resolution
-                        </button>
                     </form>
                 </div>
             </div>

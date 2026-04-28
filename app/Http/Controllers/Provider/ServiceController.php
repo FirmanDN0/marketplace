@@ -102,6 +102,16 @@ class ServiceController extends Controller
         return redirect()->route('provider.services.index')->with('success', 'Service created. Awaiting review.');
     }
 
+    public function show(Service $service)
+    {
+        if ($service->provider_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $service->load(['category', 'packages', 'images', 'reviews.customer']);
+        return view('provider.services.show', compact('service'));
+    }
+
     public function edit(Service $service)
     {
         if ($service->provider_id !== auth()->id()) {
