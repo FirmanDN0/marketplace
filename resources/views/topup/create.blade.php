@@ -9,8 +9,8 @@
             <h2 class="text-xl font-bold text-gray-900">Top Up Balance</h2>
             <p class="text-gray-500 text-sm mt-1">Add funds to your wallet</p>
         </div>
-            @endif
 
+        <div class="px-6 py-5">
             <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 mb-6">
                 <div class="text-sm text-blue-600 font-medium">Current Balance</div>
                 <div class="text-2xl font-bold text-blue-700">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>

@@ -227,6 +227,10 @@
                             ['route' => 'admin.disputes.index', 'icon' => 'fa-exclamation-triangle', 'label' => 'Sengketa', 'badge' => $adminPendingCounts['disputes'] ?? 0],
                             ['route' => 'admin.customer-service.index', 'icon' => 'fa-headset', 'label' => 'Dukungan', 'badge' => $adminPendingCounts['cs'] ?? 0],
                         ],
+                        'Akun' => [
+                            ['route' => 'profile.edit', 'icon' => 'fa-cog', 'label' => 'Pengaturan'],
+                            ['route' => 'customer-service.index', 'icon' => 'fa-headset', 'label' => 'Bantuan'],
+                        ],
                     ];
                 } elseif($isProvider) {
                     $navGroups = [
