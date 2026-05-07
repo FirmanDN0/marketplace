@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\WithdrawRequest;
 use Illuminate\Http\Request;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class ReportController extends Controller
 {
     public function index()
@@ -36,5 +38,33 @@ class ReportController extends Controller
         $pendingWithdrawals = WithdrawRequest::where('status', 'pending')->sum('amount');
 
         return view('admin.reports.index', compact('revenue', 'orders', 'users', 'pendingWithdrawals'));
+    }
+
+    public function exportPdf()
+    {
+        $revenue = [
+            'today'      => Transaction::where('type', 'fee')->whereDate('created_at', today())->sum('amount'),
+            'this_month' => Transaction::where('type', 'fee')->whereMonth('created_at', now()->month)->sum('amount'),
+            'total'      => Transaction::where('type', 'fee')->sum('amount'),
+        ];
+
+        $orders = [
+            'today'      => Order::whereDate('created_at', today())->count(),
+            'this_month' => Order::whereMonth('created_at', now()->month)->count(),
+            'total'      => Order::count(),
+            'completed'  => Order::where('status', 'completed')->count(),
+            'cancelled'  => Order::where('status', 'cancelled')->count(),
+        ];
+
+        $users = [
+            'total_providers' => User::where('role', 'provider')->count(),
+            'total_customers' => User::where('role', 'customer')->count(),
+        ];
+
+        $recentOrders = Order::with(['customer', 'service'])->latest()->limit(20)->get();
+
+        $pdf = Pdf::loadView('admin.reports.pdf', compact('revenue', 'orders', 'users', 'recentOrders'));
+        
+        return $pdf->download('report-' . now()->format('Y-m-d') . '.pdf');
     }
 }

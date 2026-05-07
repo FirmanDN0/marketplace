@@ -3,8 +3,15 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
 
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Platform Reports</h1>
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Platform Reports</h1>
+            <p class="text-sm text-gray-500">Overview of platform performance and financial data.</p>
+        </div>
+        <a href="{{ route('admin.reports.export') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium transition shadow-sm">
+            <i class="fas fa-file-pdf"></i>
+            Export to PDF
+        </a>
     </div>
 
     {{-- Revenue --}}

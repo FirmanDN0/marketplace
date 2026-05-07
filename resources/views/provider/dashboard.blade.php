@@ -25,9 +25,14 @@
             <h1 class="text-2xl md:text-3xl font-bold text-white mb-1">{{ auth()->user()->name }}</h1>
             <p class="text-white/70 text-sm">Berikut perkembangan bisnis Anda hari ini.</p>
         </div>
-        <a href="{{ route('provider.services.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-800 font-semibold rounded-xl hover:bg-gray-50 transition text-sm shadow-lg shrink-0">
-            <i class="fas fa-plus text-blue-600"></i> Buat Layanan Baru
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('provider.report.export') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white border border-white/20 font-semibold rounded-xl hover:bg-white/20 transition text-sm shadow-lg shrink-0">
+                <i class="fas fa-file-pdf"></i> Cetak Laporan
+            </a>
+            <a href="{{ route('provider.services.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-800 font-semibold rounded-xl hover:bg-gray-50 transition text-sm shadow-lg shrink-0">
+                <i class="fas fa-plus text-blue-600"></i> Buat Layanan Baru
+            </a>
+        </div>
     </div>
 </div>
 

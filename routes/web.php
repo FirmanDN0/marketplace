@@ -170,6 +170,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:admi
 
     // Reports
     Route::get('/reports', [AdminReport::class, 'index'])->name('reports');
+    Route::get('/reports/export', [AdminReport::class, 'exportPdf'])->name('reports.export');
 
     // Reviews
     Route::get('/reviews', [AdminReview::class, 'index'])->name('reviews.index');
@@ -195,6 +196,7 @@ Route::prefix('provider/onboarding')->name('provider.onboarding.')->middleware([
 
 Route::prefix('provider')->name('provider.')->middleware(['auth', 'active', 'verified', 'role:provider', 'provider.onboarding'])->group(function () {
     Route::get('/', [ProviderDashboard::class, 'index'])->name('dashboard');
+    Route::get('/report/export', [ProviderDashboard::class, 'exportPdf'])->name('report.export');
 
     // Services
     Route::get('/services', [ProviderService::class, 'index'])->name('services.index');
