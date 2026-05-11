@@ -38,25 +38,38 @@
 
 {{-- Stats Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    @php $statCards = [
-        ['label' => 'Saldo Tersedia', 'value' => 'Rp '.number_format($stats['balance'], 0, ',', '.'), 'sub' => 'Total: Rp '.number_format($stats['total_earned'], 0, ',', '.'), 'subColor' => 'text-green-600', 'icon' => 'fa-wallet', 'iconBg' => 'bg-green-100 text-green-600'],
-        ['label' => 'Pesanan Aktif', 'value' => $stats['active_orders'], 'sub' => $stats['total_orders'].' total pesanan', 'subColor' => 'text-blue-600', 'icon' => 'fa-clipboard-check', 'iconBg' => 'bg-blue-100 text-blue-600'],
-        ['label' => 'Pesanan Selesai', 'value' => $stats['completed_orders'], 'sub' => $stats['active_services'].' layanan aktif', 'subColor' => 'text-emerald-600', 'icon' => 'fa-check-circle', 'iconBg' => 'bg-purple-100 text-purple-600'],
-        ['label' => 'Rating', 'value' => number_format($stats['avg_rating'], 1), 'sub' => 'Dari '.$stats['completed_orders'].' ulasan', 'subColor' => 'text-gray-500', 'icon' => 'fa-star', 'iconBg' => 'bg-yellow-100 text-yellow-600'],
-    ]; @endphp
-
-    @foreach($statCards as $card)
     <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-gray-500">{{ $card['label'] }}</span>
-            <div class="w-10 h-10 {{ $card['iconBg'] }} rounded-xl flex items-center justify-center">
-                <i class="fas {{ $card['icon'] }}"></i>
-            </div>
+            <span class="text-sm font-medium text-gray-500">Saldo Tersedia</span>
+            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center"><i class="fas fa-wallet"></i></div>
         </div>
-        <div class="text-2xl font-bold text-gray-900 mb-1">{{ $card['value'] }}</div>
-        <div class="text-xs {{ $card['subColor'] }}">{{ $card['sub'] }}</div>
+        <div class="text-2xl font-bold text-gray-900 mb-1" data-rt-stat="balance">Rp {{ number_format($stats['balance'], 0, ',', '.') }}</div>
+        <div class="text-xs text-green-600" data-rt-stat="total_earned">Total: Rp {{ number_format($stats['total_earned'], 0, ',', '.') }}</div>
     </div>
-    @endforeach
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500">Pesanan Aktif</span>
+            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fas fa-clipboard-check"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-gray-900 mb-1" data-rt-stat="active_orders">{{ $stats['active_orders'] }}</div>
+        <div class="text-xs text-blue-600" data-rt-stat="total_orders">{{ $stats['total_orders'] }} total pesanan</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500">Pesanan Selesai</span>
+            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-gray-900 mb-1" data-rt-stat="completed_orders">{{ $stats['completed_orders'] }}</div>
+        <div class="text-xs text-emerald-600" data-rt-stat="active_services">{{ $stats['active_services'] }} layanan aktif</div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500">Rating</span>
+            <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center"><i class="fas fa-star"></i></div>
+        </div>
+        <div class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($stats['avg_rating'], 1) }}</div>
+        <div class="text-xs text-gray-500">Dari {{ $stats['completed_orders'] }} ulasan</div>
+    </div>
 </div>
 
 {{-- Quick Actions --}}
@@ -196,5 +209,80 @@
         </table>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(() => {
+    const statsUrl = '/api/realtime/dashboard/stats';
+    let polling = true;
+
+    function formatRupiah(n) {
+        return 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    function updateStat(key, value) {
+        const el = document.querySelector(`[data-rt-stat="${key}"]`);
+        if (!el) return;
+        
+        const old = el.textContent;
+        let newText = '';
+
+        switch(key) {
+            case 'balance':
+                newText = formatRupiah(value);
+                break;
+            case 'total_earned':
+                newText = 'Total: ' + formatRupiah(value);
+                break;
+            case 'active_orders':
+            case 'completed_orders':
+                newText = String(value);
+                break;
+            case 'total_orders':
+                newText = value + ' total pesanan';
+                break;
+            case 'active_services':
+                newText = value + ' layanan aktif';
+                break;
+            default:
+                newText = String(value);
+        }
+
+        if (old !== newText) {
+            el.textContent = newText;
+            el.style.transition = 'color 0.3s';
+            el.style.color = '#2563eb';
+            setTimeout(() => { el.style.color = ''; }, 1500);
+        }
+    }
+
+    async function pollStats() {
+        if (!polling) return;
+        try {
+            const res = await fetch(statsUrl, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (data.stats) {
+                Object.entries(data.stats).forEach(([key, value]) => {
+                    updateStat(key, value);
+                });
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    // Poll every 10 seconds
+    setInterval(pollStats, 10000);
+
+    document.addEventListener('visibilitychange', () => {
+        polling = document.visibilityState === 'visible';
+        if (polling) pollStats();
+    });
+})();
+</script>
+@endpush
 
 @endsection

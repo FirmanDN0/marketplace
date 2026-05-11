@@ -13,12 +13,19 @@ class CustomerServiceController extends Controller
     {
         $user = auth()->user();
 
-        $conversations = CsConversation::where('user_id', $user->id)
+        $activeConversations = CsConversation::where('user_id', $user->id)
+            ->whereIn('status', ['ai', 'human'])
             ->with('lastMessage')
             ->latest()
-            ->paginate(15);
+            ->get();
 
-        return view('customer-service.index', compact('conversations'));
+        $closedConversations = CsConversation::where('user_id', $user->id)
+            ->where('status', 'closed')
+            ->with('lastMessage')
+            ->latest()
+            ->paginate(10, ['*'], 'closed_page');
+
+        return view('customer-service.index', compact('activeConversations', 'closedConversations'));
     }
 
 

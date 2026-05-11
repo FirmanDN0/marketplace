@@ -26,8 +26,8 @@
             <div class="px-4 py-4">
                 <div class="flex items-center justify-between mb-2">
                     <span class="font-semibold text-gray-900">Rp {{ number_format($w->amount, 0, ',', '.') }}</span>
-                    @php $sc = match($w->status) { 'approved','processed' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ $w->status }}</span>
+                    @php $sc = match($w->status) { 'processed','approved' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ ucfirst($w->status === 'processed' ? 'success' : $w->status) }}</span>
                 </div>
                 <div class="text-sm text-gray-600">{{ str_replace('_',' ',$w->method) }}</div>
                 <div class="text-xs text-gray-400 mt-1">{{ $w->created_at->format('M d, Y') }}</div>
@@ -58,8 +58,8 @@
                     <td class="px-5 py-3 font-semibold text-gray-900">Rp {{ number_format($w->amount, 0, ',', '.') }}</td>
                     <td class="px-5 py-3 text-gray-700">{{ str_replace('_',' ',$w->method) }}</td>
                     <td class="px-5 py-3">
-                        @php $sc = match($w->status) { 'approved','processed' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
-                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ $w->status }}</span>
+                        @php $sc = match($w->status) { 'processed','approved' => 'bg-green-100 text-green-700', 'rejected' => 'bg-red-100 text-red-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ ucfirst($w->status === 'processed' ? 'success' : $w->status) }}</span>
                     </td>
                     <td class="px-5 py-3 text-gray-500 hidden md:table-cell">{{ $w->created_at->format('M d, Y') }}</td>
                     <td class="px-5 py-3 text-gray-500 hidden md:table-cell">{{ $w->notes ?? '-' }}</td>

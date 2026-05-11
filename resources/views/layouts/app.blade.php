@@ -391,6 +391,8 @@
     const syncUrl = '{{ route('notifications.sync-counts') }}';
     let syncInFlight = false;
     let lastSyncAt = 0;
+    let prevNotifCount = {{ $unreadNotifs }};
+    let prevMsgCount = {{ $unreadMessages }};
 
     function renderBadge(type, count) {
         const value = Number(count) || 0;
@@ -399,7 +401,30 @@
         document.querySelectorAll(`[data-unread-badge="${type}"]`).forEach((badge) => {
             badge.textContent = displayValue;
             badge.classList.toggle('hidden', value <= 0);
+            
+            // Pulse animation when count increases
+            if (value > 0) {
+                badge.classList.add('animate-pulse');
+                setTimeout(() => badge.classList.remove('animate-pulse'), 2000);
+            }
         });
+    }
+
+    // Notification ping sound using Web Audio API
+    function playNotifPing() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+        } catch (e) { /* ignore audio errors */ }
     }
 
     async function syncUnreadCounts(force = false) {
@@ -409,7 +434,7 @@
             return;
         }
 
-        if (!force && now - lastSyncAt < 1500) {
+        if (!force && now - lastSyncAt < 1000) {
             return;
         }
 
@@ -430,8 +455,19 @@
             }
 
             const payload = await response.json();
-            renderBadge('notifications', payload.notifications || 0);
-            renderBadge('messages', payload.messages || 0);
+            const newNotifCount = payload.notifications || 0;
+            const newMsgCount = payload.messages || 0;
+            
+            renderBadge('notifications', newNotifCount);
+            renderBadge('messages', newMsgCount);
+
+            // Play ping sound when new notifications/messages arrive
+            if (newNotifCount > prevNotifCount || newMsgCount > prevMsgCount) {
+                playNotifPing();
+            }
+            
+            prevNotifCount = newNotifCount;
+            prevMsgCount = newMsgCount;
             lastSyncAt = Date.now();
         } catch (error) {
             // Ignore transient sync errors.
@@ -451,7 +487,8 @@
     });
     document.addEventListener('ui:sync-unread-counts', () => syncUnreadCounts(true));
 
-    setInterval(() => syncUnreadCounts(false), 15000);
+    // Faster polling: 5 seconds instead of 15
+    setInterval(() => syncUnreadCounts(false), 5000);
     syncUnreadCounts(true);
 })();
 

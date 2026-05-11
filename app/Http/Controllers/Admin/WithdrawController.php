@@ -61,7 +61,7 @@ class WithdrawController extends Controller
             ['withdraw_id' => $withdrawRequest->id]
         );
 
-        return back()->with('success', 'Withdrawal approved and processed.');
+        return back()->with('success', 'Withdrawal approved and completed.');
     }
 
     public function reject(Request $request, WithdrawRequest $withdrawRequest)

@@ -35,6 +35,7 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrder;
 use App\Http\Controllers\Customer\ReviewController as CustomerReview;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ProviderProfileController;
+use App\Http\Controllers\Api\RealtimeController;
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 
@@ -73,6 +74,31 @@ Route::get('/email/verify/{token}', [EmailVerificationController::class, 'verify
 // --- Midtrans Webhooks (no auth, called by Midtrans server) ---
 Route::post('/topup/notification', [TopUpController::class, 'notification'])->name('topup.notification');
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
+
+// ─── Real-time API (AJAX polling) ─────────────────────────────────────────────
+
+Route::prefix('api/realtime')->name('realtime.')->middleware(['auth', 'active', 'verified'])->group(function () {
+    // Messages
+    Route::get('/messages/{conversation}/poll', [RealtimeController::class, 'messagesPoll'])->name('messages.poll');
+    Route::post('/messages/{conversation}/send', [RealtimeController::class, 'messagesSend'])->name('messages.send')->middleware('throttle:30,1');
+
+    // Customer Service (user side)
+    Route::get('/cs/{conversation}/poll', [RealtimeController::class, 'csPoll'])->name('cs.poll');
+    Route::post('/cs/{conversation}/send', [RealtimeController::class, 'csSend'])->name('cs.send')->middleware('throttle:20,1');
+
+    // Customer Service (admin side)
+    Route::get('/cs-admin/{conversation}/poll', [RealtimeController::class, 'csAdminPoll'])->name('cs-admin.poll');
+    Route::post('/cs-admin/{conversation}/send', [RealtimeController::class, 'csAdminSend'])->name('cs-admin.send');
+
+    // Notifications
+    Route::get('/notifications/poll', [RealtimeController::class, 'notificationsPoll'])->name('notifications.poll');
+
+    // Dashboard stats
+    Route::get('/dashboard/stats', [RealtimeController::class, 'dashboardStats'])->name('dashboard.stats');
+
+    // Order status
+    Route::get('/order/{order}/status', [RealtimeController::class, 'orderStatus'])->name('order.status');
+});
 
 // ─── Authenticated (shared) ────────────────────────────────────────────────────
 

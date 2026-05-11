@@ -111,8 +111,8 @@
             <div class="px-4 py-4">
                 <div class="flex items-center justify-between mb-2">
                     <span class="font-semibold text-gray-900">Rp {{ number_format($wd->amount, 0, ',', '.') }}</span>
-                    @php $wc = match($wd->status) { 'processed' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', 'approved' => 'bg-blue-100 text-blue-700', default => 'bg-red-100 text-red-700' }; @endphp
-                    <span class="{{ $wc }} text-xs font-semibold px-2.5 py-1 rounded-full">{{ ucfirst($wd->status) }}</span>
+                    @php $wc = match($wd->status) { 'processed','approved' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', default => 'bg-red-100 text-red-700' }; @endphp
+                    <span class="{{ $wc }} text-xs font-semibold px-2.5 py-1 rounded-full">{{ ucfirst($wd->status === 'processed' ? 'success' : $wd->status) }}</span>
                 </div>
                 <div class="text-sm text-gray-600">{{ str_replace('_',' ', ucfirst($wd->method)) }}</div>
                 <div class="text-xs text-gray-400 mt-1">{{ $wd->created_at->format('d M Y') }}</div>
@@ -139,8 +139,8 @@
                     <td class="px-5 py-3 text-gray-600">{{ str_replace('_',' ', ucfirst($wd->method)) }}</td>
                     <td class="px-5 py-3 text-gray-600 hidden md:table-cell">{{ optional($wd->account_details)['name'] ?? '-' }} / {{ optional($wd->account_details)['number'] ?? '-' }}</td>
                     <td class="px-5 py-3">
-                        @php $wc = match($wd->status) { 'processed' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', 'approved' => 'bg-blue-100 text-blue-700', default => 'bg-red-100 text-red-700' }; @endphp
-                        <span class="{{ $wc }} text-xs font-semibold px-2.5 py-1 rounded-full">{{ ucfirst($wd->status) }}</span>
+                        @php $wc = match($wd->status) { 'processed','approved' => 'bg-green-100 text-green-700', 'pending' => 'bg-yellow-100 text-yellow-700', default => 'bg-red-100 text-red-700' }; @endphp
+                        <span class="{{ $wc }} text-xs font-semibold px-2.5 py-1 rounded-full">{{ ucfirst($wd->status === 'processed' ? 'success' : $wd->status) }}</span>
                     </td>
                     <td class="px-5 py-3 text-gray-500">{{ $wd->created_at->format('d M Y') }}</td>
                 </tr>

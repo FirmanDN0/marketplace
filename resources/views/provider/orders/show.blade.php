@@ -266,4 +266,40 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(() => {
+    const orderId = {{ $order->id }};
+    const pollUrl = '/api/realtime/order/' + orderId + '/status';
+    let currentStatus = '{{ $order->status }}';
+    let polling = true;
+
+    async function pollStatus() {
+        if (!polling) return;
+        try {
+            const res = await fetch(pollUrl, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            if (data.status && data.status !== currentStatus) {
+                location.reload();
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    @if(in_array($order->status, ['paid', 'in_progress', 'delivered', 'disputed']))
+    setInterval(pollStatus, 5000);
+    @endif
+
+    document.addEventListener('visibilitychange', () => {
+        polling = document.visibilityState === 'visible';
+        if (polling) pollStatus();
+    });
+})();
+</script>
+@endpush
 @endsection

@@ -53,7 +53,7 @@
                     Detail <i class="fas fa-arrow-right text-[10px] ml-0.5"></i>
                 </a>
             </div>
-            <div class="text-3xl font-bold mb-4">Rp {{ number_format($stats['balance'], 0, ',', '.') }}</div>
+            <div class="text-3xl font-bold mb-4" data-rt-stat="balance">Rp {{ number_format($stats['balance'], 0, ',', '.') }}</div>
             <a href="{{ route('wallet.topup.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl text-sm font-medium transition backdrop-blur-sm">
                 <i class="fas fa-plus text-xs"></i> Isi Saldo
             </a>
@@ -62,21 +62,24 @@
 
     {{-- Stat Cards --}}
     <div class="lg:col-span-3 grid grid-cols-3 gap-4">
-        @php $statCards = [
-            ['label' => 'Total Pesanan', 'value' => $stats['total_orders'], 'icon' => 'fa-box', 'iconBg' => 'bg-blue-100 text-blue-600', 'sub' => $stats['active_orders'] . ' aktif'],
-            ['label' => 'Selesai', 'value' => $stats['completed_orders'], 'icon' => 'fa-check-circle', 'iconBg' => 'bg-green-100 text-green-600', 'sub' => 'dari ' . $stats['total_orders'] . ' pesanan'],
-            ['label' => 'Pengeluaran', 'value' => 'Rp ' . number_format($stats['total_spent'], 0, ',', '.'), 'icon' => 'fa-receipt', 'iconBg' => 'bg-purple-100 text-purple-600', 'sub' => 'total transaksi'],
-        ]; @endphp
-        @foreach($statCards as $card)
         <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
-            <div class="w-10 h-10 {{ $card['iconBg'] }} rounded-xl flex items-center justify-center mb-3">
-                <i class="fas {{ $card['icon'] }}"></i>
-            </div>
-            <div class="text-2xl font-bold text-gray-900 mb-0.5">{{ $card['value'] }}</div>
-            <div class="text-xs text-gray-400 font-medium">{{ $card['label'] }}</div>
-            <div class="text-[11px] text-gray-400 mt-1">{{ $card['sub'] }}</div>
+            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-3"><i class="fas fa-box"></i></div>
+            <div class="text-2xl font-bold text-gray-900 mb-0.5" data-rt-stat="total_orders">{{ $stats['total_orders'] }}</div>
+            <div class="text-xs text-gray-400 font-medium">Total Pesanan</div>
+            <div class="text-[11px] text-gray-400 mt-1" data-rt-stat="active_orders">{{ $stats['active_orders'] }} aktif</div>
         </div>
-        @endforeach
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
+            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mb-3"><i class="fas fa-check-circle"></i></div>
+            <div class="text-2xl font-bold text-gray-900 mb-0.5" data-rt-stat="completed_orders">{{ $stats['completed_orders'] }}</div>
+            <div class="text-xs text-gray-400 font-medium">Selesai</div>
+            <div class="text-[11px] text-gray-400 mt-1">dari {{ $stats['total_orders'] }} pesanan</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 card-hover-lift">
+            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-3"><i class="fas fa-receipt"></i></div>
+            <div class="text-2xl font-bold text-gray-900 mb-0.5" data-rt-stat="total_spent">Rp {{ number_format($stats['total_spent'], 0, ',', '.') }}</div>
+            <div class="text-xs text-gray-400 font-medium">Pengeluaran</div>
+            <div class="text-[11px] text-gray-400 mt-1">total transaksi</div>
+        </div>
     </div>
 </div>
 
@@ -215,5 +218,76 @@
         </table>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(() => {
+    const statsUrl = '/api/realtime/dashboard/stats';
+    let polling = true;
+
+    function formatRupiah(n) {
+        return 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    function updateStat(key, value) {
+        const el = document.querySelector(`[data-rt-stat="${key}"]`);
+        if (!el) return;
+
+        const old = el.textContent;
+        let newText = '';
+
+        switch(key) {
+            case 'balance':
+            case 'total_spent':
+                newText = formatRupiah(value);
+                break;
+            case 'total_orders':
+                newText = String(value);
+                break;
+            case 'active_orders':
+                newText = value + ' aktif';
+                break;
+            case 'completed_orders':
+                newText = String(value);
+                break;
+            default:
+                newText = String(value);
+        }
+
+        if (old !== newText) {
+            el.textContent = newText;
+            el.style.transition = 'color 0.3s';
+            el.style.color = '#2563eb';
+            setTimeout(() => { el.style.color = ''; }, 1500);
+        }
+    }
+
+    async function pollStats() {
+        if (!polling) return;
+        try {
+            const res = await fetch(statsUrl, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            if (data.stats) {
+                Object.entries(data.stats).forEach(([key, value]) => {
+                    updateStat(key, value);
+                });
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    setInterval(pollStats, 10000);
+
+    document.addEventListener('visibilitychange', () => {
+        polling = document.visibilityState === 'visible';
+        if (polling) pollStats();
+    });
+})();
+</script>
+@endpush
 
 @endsection
