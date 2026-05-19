@@ -6,6 +6,9 @@
 
     {{-- Header --}}
     <div class="flex items-center gap-4 mb-6">
+        <a href="{{ route('messages.index') }}" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 shadow-sm transition-all duration-200 shrink-0" title="Kembali ke Pesan">
+            <i class="fas fa-arrow-left text-sm"></i>
+        </a>
         @if(optional($other)->avatar)
             <img src="{{ Storage::url($other->avatar) }}" alt="{{ $other->name }}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
         @else

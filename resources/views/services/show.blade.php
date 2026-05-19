@@ -182,7 +182,7 @@
 
         {{-- Right Sidebar: Sticky Package --}}
         <div class="w-full lg:w-96 shrink-0">
-            <div class="sticky top-24 space-y-4">
+            <div class="space-y-4">
 
                 {{-- Package Card --}}
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" x-data="{ activePkg: 0 }">
