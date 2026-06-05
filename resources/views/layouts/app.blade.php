@@ -46,8 +46,8 @@
 @endphp
 @endauth
 
-{{-- NAVBAR (public/guest pages only) --}}
-@if(!($isDashboard ?? false) || !auth()->check())
+{{-- NAVBAR (public/guest pages only, except auth pages) --}}
+@if((!($isDashboard ?? false) || !auth()->check()) && !request()->routeIs('login', 'register', 'password.*', 'verification.*'))
 <header class="bg-white/75 backdrop-blur-xl border-b border-blue-100/30 sticky top-0 z-50 transition-all duration-300" x-data="{ mobileOpen: false, userOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
