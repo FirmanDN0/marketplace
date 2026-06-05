@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('restrict');
             $table->decimal('amount', 12, 2);
             $table->string('currency', 10)->default('IDR');
-            $table->enum('payment_method', ['midtrans', 'stripe', 'manual', 'balance'])->default('midtrans');
+            $table->string('payment_method', 50)->default('midtrans');
             $table->enum('status', ['pending', 'success', 'failed', 'refunded'])->default('pending');
             $table->string('payment_token')->nullable();
             $table->string('payment_url')->nullable();

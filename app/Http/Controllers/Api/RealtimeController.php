@@ -36,7 +36,7 @@ class RealtimeController extends Controller
             ->update(['read_at' => now()]);
 
         $newMessages = $conversation->messages()
-            ->with('sender')
+            ->with(['sender', 'customOffer', 'replyTo.sender'])
             ->where('id', '>', $afterId)
             ->orderBy('id')
             ->get()
@@ -48,6 +48,20 @@ class RealtimeController extends Controller
                     'message_text'    => $msg->message_text,
                     'attachment_path' => $msg->attachment_path ? Storage::url($msg->attachment_path) : null,
                     'attachment_name' => $msg->attachment_name,
+                    'custom_offer'    => $msg->customOffer ? [
+                        'id' => $msg->customOffer->id,
+                        'title' => $msg->customOffer->title,
+                        'description' => $msg->customOffer->description,
+                        'price' => number_format($msg->customOffer->price, 0, ',', '.'),
+                        'delivery_days' => $msg->customOffer->delivery_days,
+                        'status' => $msg->customOffer->status,
+                    ] : null,
+                    'reply_to'        => $msg->replyTo ? [
+                        'id' => $msg->replyTo->id,
+                        'sender_name' => optional($msg->replyTo->sender)->name ?? 'Unknown',
+                        'message_text' => $msg->replyTo->message_text,
+                        'attachment_name' => $msg->replyTo->attachment_name,
+                    ] : null,
                     'time'            => $msg->created_at->format('d M H:i'),
                 ];
             });
@@ -72,6 +86,7 @@ class RealtimeController extends Controller
         $data = $request->validate([
             'message_text' => 'required_without:attachment|nullable|string|max:5000',
             'attachment'   => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip,rar,txt,csv|max:10240',
+            'reply_to_id'  => 'nullable|exists:messages,id',
         ]);
 
         $attachmentPath = null;
@@ -89,7 +104,10 @@ class RealtimeController extends Controller
             'message_text'    => $data['message_text'] ?? null,
             'attachment_path' => $attachmentPath,
             'attachment_name' => $attachmentName,
+            'reply_to_id'     => $data['reply_to_id'] ?? null,
         ]);
+        
+        $msg->load('replyTo.sender');
 
         $conversation->update(['last_message_at' => now()]);
 
@@ -106,17 +124,109 @@ class RealtimeController extends Controller
             route('messages.show', $conversation->id)
         );
 
+        $messagePayload = [
+            'id'              => $msg->id,
+            'sender_id'       => $user->id,
+            'sender_name'     => $user->name,
+            'message_text'    => $msg->message_text,
+            'attachment_path' => $attachmentPath ? Storage::url($attachmentPath) : null,
+            'attachment_name' => $attachmentName,
+            'reply_to'        => $msg->replyTo ? [
+                'id' => $msg->replyTo->id,
+                'sender_name' => optional($msg->replyTo->sender)->name ?? 'Unknown',
+                'message_text' => $msg->replyTo->message_text,
+                'attachment_name' => $msg->replyTo->attachment_name,
+            ] : null,
+            'time'            => $msg->created_at->format('d M H:i'),
+        ];
+
+        try {
+            broadcast(new \App\Events\MessageSent($conversation->id, $messagePayload))->toOthers();
+        } catch (\Throwable $e) {
+            \Log::warning('Broadcasting MessageSent failed: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
-            'message' => [
-                'id'              => $msg->id,
-                'mine'            => true,
-                'sender_name'     => $user->name,
-                'message_text'    => $msg->message_text,
-                'attachment_path' => $attachmentPath ? Storage::url($attachmentPath) : null,
-                'attachment_name' => $attachmentName,
-                'time'            => $msg->created_at->format('d M H:i'),
+            'message' => array_merge($messagePayload, ['mine' => true]),
+        ]);
+    }
+
+    public function customOfferSend(Request $request, Conversation $conversation)
+    {
+        $user = auth()->user();
+
+        if ($conversation->customer_id !== $user->id && $conversation->provider_id !== $user->id) {
+            abort(403);
+        }
+        
+        if (!$user->isProvider()) {
+            abort(403, 'Only providers can send custom offers.');
+        }
+
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+            'price' => 'required|numeric|min:1000',
+            'delivery_days' => 'required|integer|min:1',
+        ]);
+
+        $customOffer = \App\Models\CustomOffer::create([
+            'conversation_id' => $conversation->id,
+            'provider_id' => $user->id,
+            'customer_id' => $conversation->customer_id,
+            'service_id' => $conversation->service_id,
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'price' => $data['price'],
+            'delivery_days' => $data['delivery_days'],
+        ]);
+
+        $msg = $conversation->messages()->create([
+            'sender_id' => $user->id,
+            'message_text' => null,
+            'custom_offer_id' => $customOffer->id,
+        ]);
+
+        $conversation->update(['last_message_at' => now()]);
+        $receiverId = $conversation->customer_id;
+
+        \App\Services\NotificationService::send(
+            $receiverId,
+            'new_message',
+            'Penawaran Kustom Baru',
+            "{$user->name} mengirimkan Penawaran Kustom (Custom Offer) untuk proyek Anda.",
+            ['conversation_id' => $conversation->id],
+            route('messages.show', $conversation->id)
+        );
+
+        $messagePayload = [
+            'id'              => $msg->id,
+            'sender_id'       => $user->id,
+            'sender_name'     => $user->name,
+            'message_text'    => null,
+            'attachment_path' => null,
+            'attachment_name' => null,
+            'custom_offer'    => [
+                'id' => $customOffer->id,
+                'title' => $customOffer->title,
+                'description' => $customOffer->description,
+                'price' => number_format($customOffer->price, 0, ',', '.'),
+                'delivery_days' => $customOffer->delivery_days,
+                'status' => $customOffer->status,
             ],
+            'time'            => $msg->created_at->format('d M H:i'),
+        ];
+
+        try {
+            broadcast(new \App\Events\MessageSent($conversation->id, $messagePayload))->toOthers();
+        } catch (\Throwable $e) {
+            \Log::warning('Broadcasting MessageSent failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => array_merge($messagePayload, ['mine' => true]),
         ]);
     }
 

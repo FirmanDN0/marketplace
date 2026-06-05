@@ -4,20 +4,23 @@
 <div class="max-w-4xl mx-auto">
 
     {{-- Hero Header --}}
-    <div class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div class="absolute bottom-0 left-0 w-28 h-28 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+    <div class="hero-gradient rounded-3xl p-6 sm:p-8 mb-8 relative overflow-hidden shadow-xl">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/[0.05] rounded-full float-shape-slow"></div>
+            <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-white/[0.04] rounded-full float-shape-reverse"></div>
+            <div class="absolute top-[20%] left-[10%] w-28 h-28 bg-indigo-500/20 rounded-full glow-orb animate-float-slow"></div>
+        </div>
         <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <h1 class="text-2xl font-extrabold text-white flex items-center gap-3 tracking-tight">
+                    <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/10 shadow-lg">
                         <i class="fas fa-headset text-lg"></i>
                     </div>
                     Pusat Bantuan
                 </h1>
-                <p class="text-blue-100 text-sm mt-2 ml-14">AI kami siap membantu Anda 24/7. Butuh bantuan manusia? Tinggal minta saja.</p>
+                <p class="text-blue-200/50 text-sm mt-2 ml-14 font-medium">AI kami siap membantu Anda 24/7. Butuh bantuan manusia? Tinggal minta saja.</p>
             </div>
-            <a href="{{ route('customer-service.start') }}" class="bg-white text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-xl font-semibold text-sm transition inline-flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-blue-900/20">
+            <a href="{{ route('customer-service.start') }}" class="bg-white/15 backdrop-blur-sm text-white border border-white/20 hover:bg-white/25 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center gap-2 self-start sm:self-auto shadow-lg hover:-translate-y-0.5 active:translate-y-0 duration-300">
                 <i class="fas fa-plus"></i> Percakapan Baru
             </a>
         </div>

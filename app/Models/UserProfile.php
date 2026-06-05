@@ -10,6 +10,7 @@ class UserProfile extends Model
         'user_id', 'bio', 'phone', 'country', 'city', 'website',
         'skills', 'languages', 'experience_years', 'hourly_rate',
         'balance', 'pending_balance', 'total_earned', 'total_spent',
+        'is_verified_provider'
     ];
 
     protected $casts = [
@@ -19,6 +20,7 @@ class UserProfile extends Model
         'pending_balance'   => 'decimal:2',
         'total_earned'      => 'decimal:2',
         'total_spent'       => 'decimal:2',
+        'is_verified_provider' => 'boolean',
     ];
 
     public function user()

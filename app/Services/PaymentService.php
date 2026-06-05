@@ -38,19 +38,39 @@ class PaymentService
     public function initiate(Order $order, string $method = 'midtrans'): Payment
     {
         return DB::transaction(function () use ($order, $method) {
+            $itemDetails = [
+                [
+                    'id'       => 'SVC-' . $order->service_id,
+                    'price'    => (int) $order->price,
+                    'quantity' => 1,
+                    'name'     => substr(optional($order->service)->title ?? 'Service Order', 0, 50),
+                ]
+            ];
+
+            if ($order->tax_fee > 0) {
+                $itemDetails[] = [
+                    'id'       => 'TAX-FEE',
+                    'price'    => (int) $order->tax_fee,
+                    'quantity' => 1,
+                    'name'     => 'Biaya Layanan / PPN',
+                ];
+            }
+
+            if ($order->discount > 0) {
+                $itemDetails[] = [
+                    'id'       => 'DISC-VOUCHER',
+                    'price'    => -((int) $order->discount),
+                    'quantity' => 1,
+                    'name'     => 'Potongan Promo',
+                ];
+            }
+
             $params = [
                 'transaction_details' => [
                     'order_id'     => $order->order_number,
-                    'gross_amount' => (int) $order->price,
+                    'gross_amount' => (int) $order->grand_total,
                 ],
-                'item_details' => [
-                    [
-                        'id'       => 'SVC-' . $order->service_id,
-                        'price'    => (int) $order->price,
-                        'quantity' => 1,
-                        'name'     => substr(optional($order->service)->title ?? 'Service Order', 0, 50),
-                    ],
-                ],
+                'item_details' => $itemDetails,
                 'customer_details' => [
                     'first_name' => $order->customer->name,
                     'email'      => $order->customer->email,
@@ -65,7 +85,7 @@ class PaymentService
             $payment = Payment::create([
                 'order_id'       => $order->id,
                 'user_id'        => $order->customer_id,
-                'amount'         => $order->price,
+                'amount'         => $order->grand_total,
                 'payment_method' => $method,
                 'status'         => 'pending',
                 'payment_token'  => $snapToken,
@@ -75,7 +95,7 @@ class PaymentService
             PaymentLog::create([
                 'payment_id' => $payment->id,
                 'event'      => 'payment_initiated',
-                'payload'    => ['method' => $method, 'amount' => $order->price, 'snap_token' => $snapToken],
+                'payload'    => ['method' => $method, 'amount' => $order->grand_total, 'snap_token' => $snapToken],
             ]);
 
             return $payment;
@@ -150,27 +170,38 @@ class PaymentService
         return DB::transaction(function () use ($order) {
             $customerProfile = UserProfile::firstOrCreate(['user_id' => $order->customer_id]);
 
-            if ($customerProfile->balance < $order->price) {
+            if ($customerProfile->balance < $order->grand_total) {
                 throw new \Exception('Saldo tidak mencukupi.');
             }
 
             $balanceBefore = $customerProfile->balance;
-            $balanceAfter  = $balanceBefore - $order->price;
+            $balanceAfter  = $balanceBefore - $order->grand_total;
 
             // Deduct balance
             $customerProfile->update(['balance' => $balanceAfter]);
-            $customerProfile->increment('total_spent', (float) $order->price);
+            $customerProfile->increment('total_spent', (float) $order->grand_total);
 
-            // Create payment record
-            $payment = Payment::create([
-                'order_id'               => $order->id,
-                'user_id'                => $order->customer_id,
-                'amount'                 => $order->price,
-                'payment_method'         => 'balance',
-                'status'                 => 'success',
-                'paid_at'                => now(),
-                'gateway_transaction_id' => 'WALLET-' . $order->order_number,
-            ]);
+            // Update or Create payment record
+            $payment = $order->payment;
+            if ($payment) {
+                $payment->update([
+                    'amount'                 => $order->grand_total,
+                    'payment_method'         => 'balance',
+                    'status'                 => 'success',
+                    'paid_at'                => now(),
+                    'gateway_transaction_id' => 'WALLET-' . $order->order_number,
+                ]);
+            } else {
+                $payment = Payment::create([
+                    'order_id'               => $order->id,
+                    'user_id'                => $order->customer_id,
+                    'amount'                 => $order->grand_total,
+                    'payment_method'         => 'balance',
+                    'status'                 => 'success',
+                    'paid_at'                => now(),
+                    'gateway_transaction_id' => 'WALLET-' . $order->order_number,
+                ]);
+            }
 
             // Calculate fees
             $platformFee     = round($order->price * self::PLATFORM_FEE_PERCENT / 100, 2);
@@ -187,7 +218,7 @@ class PaymentService
                 'user_id'        => $order->customer_id,
                 'payment_id'     => $payment->id,
                 'type'           => 'payment',
-                'amount'         => -$order->price,
+                'amount'         => -$order->grand_total,
                 'balance_before' => $balanceBefore,
                 'balance_after'  => $balanceAfter,
                 'description'    => "Pembayaran saldo untuk Order #{$order->order_number}",

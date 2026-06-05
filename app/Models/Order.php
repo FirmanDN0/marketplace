@@ -8,17 +8,19 @@ class Order extends Model
 {
     protected $fillable = [
         'order_number', 'customer_id', 'provider_id', 'service_id', 'package_id',
-        'price', 'platform_fee', 'provider_earning', 'status',
+        'price', 'tax_fee', 'discount', 'grand_total', 'voucher_id', 'status',
         'delivery_deadline', 'notes', 'requirements', 'requirements_file', 'requirements_submitted_at',
         'delivery_file', 'delivery_message',
         'delivered_at', 'completed_at', 'cancelled_at', 'cancelled_by', 'cancelled_reason',
         'revision_count', 'revision_message', 'revision_requested_at',
+        'custom_offer_id'
     ];
 
     protected $casts = [
         'price'                     => 'decimal:2',
-        'platform_fee'              => 'decimal:2',
-        'provider_earning'          => 'decimal:2',
+        'tax_fee'                   => 'decimal:2',
+        'discount'                  => 'decimal:2',
+        'grand_total'               => 'decimal:2',
         'delivery_deadline'         => 'datetime',
         'delivered_at'              => 'datetime',
         'completed_at'              => 'datetime',
@@ -50,7 +52,17 @@ class Order extends Model
 
     public function payment()
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasOne(Payment::class)->latest();
+    }
+
+    public function customOffer()
+    {
+        return $this->belongsTo(CustomOffer::class);
+    }
+
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 
     public function review()

@@ -168,5 +168,68 @@ EOT;
     {
         return trim(preg_replace('/^\[ESCALATE\]\s*/i', '', $message));
     }
+
+    /**
+     * AI Service Creator: Generates SEO-friendly title, description, and tags based on user keywords.
+     */
+    public function generateServiceContent(string $keywords): ?array
+    {
+        if (empty($this->apiKey)) return null;
+
+        $systemPrompt = "Kamu adalah AI Service Creator untuk platform marketplace jasa digital. Tugasmu adalah membuat Judul (maks 60 karakter), Deskripsi (SEO friendly, copywriting yang menjual, minimal 3 paragraf dengan bullet points), dan Tags (maksimal 5 kata kunci dipisah koma) yang profesional dan menarik, HANYA berdasarkan kata kunci atau ide yang diberikan user. Balas HANYA dengan format JSON yang valid tanpa markdown codeblock tambahan: {\"title\": \"...\", \"description\": \"...\", \"tags\": \"tag1,tag2,tag3\"}";
+        
+        $payload = [
+            'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
+            'contents'         => [['role' => 'user', 'parts' => [['text' => $keywords]]]],
+            'generationConfig' => ['maxOutputTokens' => 800, 'temperature' => 0.7],
+        ];
+
+        try {
+            foreach ($this->models as $model) {
+                $response = Http::asJson()->timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$this->apiKey}", $payload);
+                if ($response->status() === 429 || $response->status() === 404) continue;
+                if ($response->failed()) return null;
+
+                $text = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                if ($text) {
+                    $jsonStr = preg_replace('/```json|```/', '', $text);
+                    return json_decode(trim($jsonStr), true);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('GeminiService AI Creator Exception: ' . $e->getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * AI Review & Chat Reply Assistant: Generates professional replies for chats or reviews.
+     */
+    public function generateReply(string $context, string $type): ?string
+    {
+        if (empty($this->apiKey)) return null;
+
+        $roleText = $type === 'review' ? 'ulasan pembeli' : 'pesan chat pembeli';
+        $systemPrompt = "Kamu adalah AI Reply Assistant untuk penjual di platform marketplace digital. Buatkan HANYA SATU balasan profesional, sopan, ramah, dan solutif dalam bahasa Indonesia untuk membalas {$roleText}. Jangan tambahkan pengantar atau penutup dari AI, langsung berikan isi balasannya saja.";
+        
+        $payload = [
+            'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
+            'contents'         => [['role' => 'user', 'parts' => [['text' => "Konteks Pesan/Ulasan Pembeli:\n{$context}\n\nTolong buatkan balasannya."]]]],
+            'generationConfig' => ['maxOutputTokens' => 400, 'temperature' => 0.7],
+        ];
+
+        try {
+            foreach ($this->models as $model) {
+                $response = Http::asJson()->timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$this->apiKey}", $payload);
+                if ($response->status() === 429 || $response->status() === 404) continue;
+                if ($response->failed()) return null;
+
+                return $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            }
+        } catch (\Exception $e) {
+            Log::error('GeminiService AI Reply Exception: ' . $e->getMessage());
+        }
+        return null;
+    }
 }
 

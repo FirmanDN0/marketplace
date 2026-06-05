@@ -14,18 +14,64 @@ class OrderService
     /**
      * Create a new order (status: pending_payment).
      */
-    public function create(int $customerId, Service $service, ServicePackage $package, ?string $notes = null): Order
+    public function create(int $customerId, Service $service, ServicePackage $package, ?string $notes = null, ?\App\Models\Voucher $voucher = null): Order
     {
-        return DB::transaction(function () use ($customerId, $service, $package, $notes) {
+        return DB::transaction(function () use ($customerId, $service, $package, $notes, $voucher) {
+            $price = $package->price;
+            $tax_fee = $price * 0.10; // 10% Biaya Layanan/PPN dibebankan ke pembeli
+            $discount = 0;
+            $voucher_id = null;
+
+            if ($voucher && $voucher->isValidFor($price)) {
+                $discount = $voucher->calculateDiscount($price);
+                $voucher_id = $voucher->id;
+                $voucher->increment('used_count');
+            }
+
+            $grand_total = max(0, $price + $tax_fee - $discount);
+
             $order = Order::create([
                 'customer_id'     => $customerId,
                 'provider_id'     => $service->provider_id,
                 'service_id'      => $service->id,
                 'package_id'      => $package->id,
-                'price'           => $package->price,
+                'price'           => $price,
+                'tax_fee'         => $tax_fee,
+                'discount'        => $discount,
+                'grand_total'     => $grand_total,
+                'voucher_id'      => $voucher_id,
                 'status'          => 'pending_payment',
                 'delivery_deadline' => null, // Deadline starts when requirements are submitted
                 'notes'           => $notes,
+            ]);
+
+            return $order;
+        });
+    }
+
+    /**
+     * Create a new order from a custom offer (status: pending_payment).
+     */
+    public function createFromCustomOffer(\App\Models\CustomOffer $customOffer): Order
+    {
+        return DB::transaction(function () use ($customOffer) {
+            $price = $customOffer->price;
+            $tax_fee = $price * 0.10;
+            $grand_total = $price + $tax_fee; // Custom Offer tidak bisa pakai voucher untuk saat ini
+
+            $order = Order::create([
+                'customer_id'       => $customOffer->customer_id,
+                'provider_id'       => $customOffer->provider_id,
+                'service_id'        => $customOffer->service_id ?? \App\Models\Service::first()->id, // Fallback if no service is linked
+                'package_id'        => null,
+                'custom_offer_id'   => $customOffer->id,
+                'price'             => $price,
+                'tax_fee'           => $tax_fee,
+                'discount'          => 0,
+                'grand_total'       => $grand_total,
+                'status'            => 'pending_payment',
+                'delivery_deadline' => null,
+                'notes'             => $customOffer->description,
             ]);
 
             return $order;
@@ -93,32 +139,32 @@ class OrderService
 
             $order->service()->increment('total_orders');
 
-            // Credit provider balance
+            // Credit provider balance (Mendapat UANG UTUH dari price, tidak ada potongan lagi)
             $profile = UserProfile::firstOrCreate(['user_id' => $order->provider_id]);
             $balanceBefore = $profile->balance;
-            $profile->increment('balance', $order->provider_earning);
-            $profile->increment('total_earned', $order->provider_earning);
+            $profile->increment('balance', $order->price);
+            $profile->increment('total_earned', $order->price);
 
             Transaction::create([
                 'user_id'        => $order->provider_id,
                 'payment_id'     => optional($order->payment)->id,
                 'type'           => 'earning',
-                'amount'         => $order->provider_earning,
+                'amount'         => $order->price,
                 'balance_before' => $balanceBefore,
-                'balance_after'  => $balanceBefore + $order->provider_earning,
+                'balance_after'  => $balanceBefore + $order->price,
                 'description'    => "Earning for Order #{$order->order_number}",
                 'reference_id'   => $order->order_number,
             ]);
 
-            // Record platform fee as revenue
+            // Record tax_fee as platform revenue
             Transaction::create([
                 'user_id'        => $order->provider_id,
                 'payment_id'     => optional($order->payment)->id,
                 'type'           => 'fee',
-                'amount'         => $order->platform_fee,
+                'amount'         => $order->tax_fee,
                 'balance_before' => 0,
                 'balance_after'  => 0,
-                'description'    => "Platform fee (10%) for Order #{$order->order_number}",
+                'description'    => "Platform Service Fee (10%) for Order #{$order->order_number}",
                 'reference_id'   => $order->order_number,
             ]);
 

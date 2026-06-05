@@ -1,16 +1,21 @@
 @extends('layouts.app')
-@section('title', 'Manage Categories')
+@section('title', 'Kelola Kategori')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-        <h1 class="text-2xl font-bold text-gray-900">Categories</h1>
-        <a href="{{ route('admin.categories.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 self-start sm:self-auto">
-            <i class="fas fa-plus text-xs"></i> Add Category
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
+                <i class="fas fa-tags text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Kategori</h1>
+        </div>
+        <a href="{{ route('admin.categories.create') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+            <i class="fas fa-plus text-xs"></i> Tambah Kategori
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
         {{-- Mobile Card View --}}
         <div class="sm:hidden divide-y divide-gray-100">
             @forelse($categories as $cat)

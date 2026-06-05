@@ -39,6 +39,12 @@ class NotificationService
             'action_url' => $actionUrl,
         ]);
 
+        try {
+            broadcast(new \App\Events\NotificationSent($userId, $notification));
+        } catch (\Throwable $e) {
+            \Log::warning('Broadcasting NotificationSent failed: ' . $e->getMessage());
+        }
+
         // Send email for important events
         if (in_array($type, self::$emailTypes)) {
             static::sendEmail($userId, $title, $message, $actionUrl);

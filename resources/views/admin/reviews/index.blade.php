@@ -4,15 +4,20 @@
 <div class="max-w-7xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Review Moderation</h1>
-            <p class="text-sm text-gray-500 mt-1">{{ $totalReviews }} total &middot; {{ $hiddenReviews }} hidden</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-yellow-400/20">
+                <i class="fas fa-star text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Moderasi Ulasan</h1>
+                <p class="text-sm text-gray-500 font-medium mt-0.5">{{ $totalReviews }} total &middot; {{ $hiddenReviews }} disembunyikan</p>
+            </div>
         </div>
     </div>
 
     {{-- Filters --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-4 mb-6">
         <form method="GET" class="flex flex-col sm:flex-row gap-3">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari review atau nama user..."
                    class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -40,7 +45,7 @@
     @if($reviews->count())
     <div class="space-y-4">
         @foreach($reviews as $review)
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden {{ !$review->is_visible ? 'opacity-60 border-red-200' : '' }}">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden {{ !$review->is_visible ? 'opacity-60 border-red-200' : '' }}">
             <div class="p-5">
                 <div class="flex flex-col sm:flex-row sm:items-start gap-4">
                     {{-- Review Content --}}
@@ -108,7 +113,7 @@
 
     <div class="mt-6">{{ $reviews->links() }}</div>
     @else
-    <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div class="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100/80">
         <i class="fas fa-star text-5xl text-gray-300 mb-4"></i>
         <p class="text-gray-500 text-lg">Tidak ada review ditemukan.</p>
     </div>

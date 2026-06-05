@@ -1,25 +1,30 @@
 @extends('layouts.app')
-@section('title', 'Withdrawals')
+@section('title', 'Riwayat Penarikan')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">My Withdrawals</h1>
-            <p class="text-sm text-gray-500 mt-1">Available Balance: <span class="font-bold text-green-600">Rp {{ number_format($profile->balance, 0, ',', '.') }}</span></p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+                <i class="fas fa-money-bill-wave text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Penarikan Saya</h1>
+                <p class="text-sm text-gray-500 font-medium mt-0.5">Saldo Tersedia: <span class="font-bold text-emerald-600">Rp {{ number_format($profile->balance, 0, ',', '.') }}</span></p>
+            </div>
         </div>
         @if($profile->balance >= 10)
-            <a href="{{ route('provider.withdraw.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 self-start sm:self-auto">
-                <i class="fas fa-plus text-xs"></i> Request Withdrawal
+            <a href="{{ route('provider.withdraw.create') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                <i class="fas fa-plus text-xs"></i> Ajukan Penarikan
             </a>
         @endif
     </div>
 
     @if(session('success'))
-        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm">{{ session('success') }}</div>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl mb-5 text-sm font-medium">{{ session('success') }}</div>
     @endif
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
         {{-- Mobile Card View --}}
         <div class="sm:hidden divide-y divide-gray-100">
             @forelse($withdrawals as $w)

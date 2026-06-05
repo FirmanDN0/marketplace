@@ -1,21 +1,22 @@
 @extends('layouts.app')
-@section('title', 'Order Detail')
+@section('title', 'Detail Pesanan')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex items-center gap-4 mb-6 flex-wrap">
-        <h1 class="text-2xl font-bold text-gray-900">Order {{ $order->order_number }}</h1>
-        @php $sc = match($order->status) { 'completed' => 'bg-green-100 text-green-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
-        <span class="{{ $sc }} text-xs font-semibold px-3 py-1.5 rounded-full">{{ str_replace('_',' ',$order->status) }}</span>
+    <div class="flex items-center gap-4 mb-8 flex-wrap">
+        <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-500/20"><i class="fas fa-clipboard-check text-sm"></i></div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Pesanan {{ $order->order_number }}</h1>
+        @php $sc = match($order->status) { 'completed' => 'bg-emerald-100 text-emerald-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
+        <span class="{{ $sc }} text-xs font-bold px-3 py-1.5 rounded-full">{{ str_replace('_',' ',$order->status) }}</span>
         @if($order->revision_count > 0)
-            <span class="bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full" title="Revision #{{ $order->revision_count }}"><i class="fas fa-sync-alt mr-1"></i>Rev #{{ $order->revision_count }}</span>
+            <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-full"><i class="fas fa-sync-alt mr-1"></i>Revisi #{{ $order->revision_count }}</span>
         @endif
     </div>
 
     {{-- Visual Order Timeline --}}
     @if(!in_array($order->status, ['pending_payment', 'cancelled']))
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 mb-6">
         @php
             $steps = [
                 'paid' => ['icon' => 'fa-receipt', 'label' => 'Order Placed'],
@@ -60,15 +61,21 @@
         {{-- Left Column --}}
         <div class="lg:col-span-2 space-y-6">
             {{-- Order Info --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Order Info</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-blue-500 text-sm"></i>Info Pesanan</h3></div>
                 <div class="p-5 space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Customer</div><p class="text-sm text-gray-900 font-medium">{{ optional($order->customer)->name }}</p></div>
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Service</div><p class="text-sm text-gray-900">{{ optional($order->service)->title }}</p></div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Package</div><p class="text-sm text-gray-900">{{ optional($order->package)->name }}</p></div>
+                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Package/Offer</div><p class="text-sm text-gray-900">
+                            @if($order->package)
+                                {{ $order->package->name }} <span class="text-gray-400">({{ $order->package->package_type }})</span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-orange-600 font-semibold"><i class="fas fa-file-invoice-dollar"></i> Custom Offer</span>
+                            @endif
+                        </p></div>
                         <div>
                             <div class="text-xs text-gray-400 uppercase font-medium mb-1">Delivery Deadline</div>
                             @if($order->delivery_deadline)
@@ -121,14 +128,14 @@
 
             {{-- Customer Requirements --}}
             @if($order->requirements_submitted_at)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900"><i class="fas fa-clipboard-list text-indigo-600 mr-1"></i> Customer's Requirements</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-clipboard-list text-indigo-500 text-sm"></i>Persyaratan Pembeli</h3></div>
                 <div class="p-5">
                     <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
                         <p class="text-sm text-gray-800 whitespace-pre-wrap">{{ $order->requirements }}</p>
                         @if($order->requirements_file)
                             <div class="mt-4">
-                                <a href="{{ Storage::url($order->requirements_file) }}" target="_blank" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+                                <a href="{{ route('attachments.requirements', $order->id) }}" target="_blank" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
                                     <i class="fas fa-download"></i> Download Attached File
                                 </a>
                             </div>
@@ -141,8 +148,8 @@
 
             {{-- Review --}}
             @if($order->review)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Customer Review</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-star text-amber-400 text-sm"></i>Ulasan Pembeli</h3></div>
                 <div class="p-5">
                     <div class="text-yellow-400 mb-2">{!! str_repeat('<i class="fas fa-star"></i>',$order->review->rating) !!}{!! str_repeat('<i class="far fa-star text-gray-300"></i>',5-$order->review->rating) !!}</div>
                     <p class="text-sm text-gray-700 mb-4">{{ $order->review->comment }}</p>
@@ -179,9 +186,19 @@
 
         {{-- Right Column - Actions --}}
         <div class="space-y-6">
+            @if($order->isDisputed() && $order->dispute)
+            <div class="bg-red-50 rounded-2xl shadow-sm border border-red-100 overflow-hidden mb-6 p-5 text-center">
+                <h4 class="font-bold text-red-900 mb-2"><i class="fas fa-gavel text-red-600 mr-1"></i> Sengketa Aktif</h4>
+                <p class="text-xs text-red-700 mb-4">Pesanan ini sedang dalam sengketa. Silakan berkomunikasi, unggah bukti, atau ajukan refund di Pusat Resolusi.</p>
+                <a href="{{ route('disputes.show', $order->dispute->id) }}" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-balance-scale"></i> Buka Pusat Resolusi
+                </a>
+            </div>
+            @endif
+
             {{-- Contact Customer --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Message Customer</h4></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h4 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-comment-dots text-indigo-500 text-sm"></i>Hubungi Pembeli</h4></div>
                 <div class="p-5">
                     <form method="POST" action="{{ route('messages.start') }}">
                         @csrf
@@ -207,7 +224,7 @@
             @endif
 
             @if($order->isInProgress())
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100">
                     <h4 class="font-semibold text-gray-900 text-sm">
                         @if($order->revision_count > 0) <i class="fas fa-sync-alt text-orange-500 mr-1"></i> Re-submit Delivery (Revision #{{ $order->revision_count }})
@@ -242,7 +259,7 @@
 
             {{-- Cancel Order --}}
             @if(in_array($order->status, ['paid', 'in_progress']))
-            <div x-data="{ showCancel: false }" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div x-data="{ showCancel: false }" class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
                 <div class="p-5">
                     <button @click="showCancel = !showCancel" class="w-full bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl font-semibold text-sm transition inline-flex items-center justify-center gap-2">
                         <i class="fas fa-times-circle"></i> Batalkan Order

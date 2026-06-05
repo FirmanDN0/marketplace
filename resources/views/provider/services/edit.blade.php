@@ -1,10 +1,13 @@
 @extends('layouts.app')
-@section('title', 'Edit Service')
+@section('title', 'Edit Layanan')
 @section('content')
 <div class="max-w-4xl mx-auto">
 
-    <div class="flex items-center gap-4 mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Edit Service</h1>
+    <div class="flex items-center gap-4 mb-8">
+        <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
+            <i class="fas fa-edit text-lg"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Edit Layanan</h1>
     </div>
 
     @if($errors->any())
@@ -23,8 +26,8 @@
     @endphp
 
     {{-- Service Info --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Service Information</h3></div>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900">Informasi Layanan</h3></div>
         <div class="p-5 space-y-4">
             <div>
                 <label for="title" class="block text-sm font-medium text-gray-700 mb-1.5">Service Title</label>
@@ -68,9 +71,9 @@
     </div>
 
     {{-- Basic Package --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-semibold text-gray-900">Basic Package</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100/80 flex items-center justify-between">
+            <h3 class="font-extrabold text-gray-900">Basic Package</h3>
             <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">Required</span>
         </div>
         <div class="p-5 space-y-4">
@@ -112,9 +115,9 @@
     </div>
 
     {{-- Standard Package --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-semibold text-gray-900">Standard Package</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100/80 flex items-center justify-between">
+            <h3 class="font-extrabold text-gray-900">Standard Package</h3>
             <span class="bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Optional</span>
         </div>
         <div class="p-5 space-y-4">
@@ -128,6 +131,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Price (Rp)</label>
                     <input type="number" name="standard_price" min="1000" step="1000" value="{{ old('standard_price', optional($standard)->price) }}"
                            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-[11px] text-gray-400 mt-1.5 italic">* Anda akan menerima 100% dari harga ini</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -156,9 +160,9 @@
     </div>
 
     {{-- Premium Package --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-semibold text-gray-900">Premium Package</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100/80 flex items-center justify-between">
+            <h3 class="font-extrabold text-gray-900">Premium Package</h3>
             <span class="bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-1 rounded-full">Optional</span>
         </div>
         <div class="p-5 space-y-4">
@@ -200,8 +204,8 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition">Update Service</button>
-        <a href="{{ route('provider.services.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-medium transition">Cancel</a>
+        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-500/15">Simpan Perubahan</button>
+        <a href="{{ route('provider.services.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-bold transition">Batal</a>
     </div>
 </form>
 </div>

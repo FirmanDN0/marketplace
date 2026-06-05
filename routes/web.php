@@ -13,6 +13,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\TopUpController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\OrderInvoiceController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\UserController as AdminUser;
 use App\Http\Controllers\Admin\CategoryController as AdminCategory;
@@ -81,6 +83,7 @@ Route::prefix('api/realtime')->name('realtime.')->middleware(['auth', 'active', 
     // Messages
     Route::get('/messages/{conversation}/poll', [RealtimeController::class, 'messagesPoll'])->name('messages.poll');
     Route::post('/messages/{conversation}/send', [RealtimeController::class, 'messagesSend'])->name('messages.send')->middleware('throttle:30,1');
+    Route::post('/messages/{conversation}/custom-offer', [RealtimeController::class, 'customOfferSend'])->name('messages.custom-offer')->middleware('throttle:30,1');
 
     // Customer Service (user side)
     Route::get('/cs/{conversation}/poll', [RealtimeController::class, 'csPoll'])->name('cs.poll');
@@ -116,12 +119,22 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
     Route::post('/messages/start', [MessageController::class, 'startOrFind'])->name('messages.start');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{conversation}/send', [MessageController::class, 'send'])->name('messages.send')->middleware('throttle:30,1');
+    Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+    // Secure Attachments Download
+    Route::get('/attachments/messages/{message}', [AttachmentController::class, 'downloadMessageAttachment'])->name('attachments.message');
+    Route::get('/attachments/deliveries/{order}', [AttachmentController::class, 'downloadDeliveryFile'])->name('attachments.delivery');
+    Route::get('/attachments/requirements/{order}', [AttachmentController::class, 'downloadRequirementsFile'])->name('attachments.requirements');
+    Route::get('/attachments/disputes/{message}', [AttachmentController::class, 'downloadDisputeAttachment'])->name('attachments.dispute');
+
+    // Invoice
+    Route::get('/orders/{order}/invoice', [OrderInvoiceController::class, 'download'])->name('orders.invoice');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/sync-counts', [NotificationController::class, 'syncCounts'])->name('notifications.sync-counts');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.all-read');
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::match(['get', 'post'], '/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     // Favorites
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
@@ -149,6 +162,12 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
     Route::get('/payment/{order}/finish', [PaymentController::class, 'finish'])->name('payment.finish');
     Route::get('/payment/{order}/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/{order}/failed', [PaymentController::class, 'failed'])->name('payment.failed');
+});
+
+// ─── Shared Dispute Resolution Center ─────────────────────────────────────────
+Route::middleware(['auth', 'active', 'verified'])->group(function () {
+    Route::get('/disputes/{dispute}', [\App\Http\Controllers\DisputeController::class, 'show'])->name('disputes.show');
+    Route::post('/disputes/{dispute}/message', [\App\Http\Controllers\DisputeController::class, 'storeMessage'])->name('disputes.message');
 });
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
@@ -211,6 +230,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:admi
     Route::post('/customer-service/{conversation}/reopen', [AdminCS::class, 'reopen'])->name('customer-service.reopen');
 });
 
+// ─── AI Copilot (Providers only) ─────────────────────────────────────────────
+Route::prefix('ai-copilot')->name('ai.')->middleware(['auth', 'active', 'verified', 'role:provider'])->group(function () {
+    Route::post('/service-creator', [\App\Http\Controllers\AICopilotController::class, 'generateService'])->name('service-creator');
+    Route::post('/reply-assistant', [\App\Http\Controllers\AICopilotController::class, 'generateReply'])->name('reply-assistant');
+});
+
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 // Onboarding routes (no onboarding middleware — these ARE the onboarding)
@@ -265,6 +290,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'active', 'ver
     Route::patch('/orders/{order}/revision', [CustomerOrder::class, 'requestRevision'])->name('orders.revision');
     Route::patch('/orders/{order}/cancel', [CustomerOrder::class, 'cancel'])->name('orders.cancel');
     Route::patch('/orders/{order}/dispute', [CustomerOrder::class, 'dispute'])->name('orders.dispute');
+    Route::post('/custom-offers/{customOffer}/pay', [CustomerOrder::class, 'payCustomOffer'])->name('custom-offer.pay');
 
     // Reviews
     Route::get('/orders/{order}/review', [CustomerReview::class, 'create'])->name('reviews.create');

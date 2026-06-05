@@ -118,4 +118,30 @@ class MessageController extends Controller
 
         return redirect()->route('messages.show', $conversation->id);
     }
+
+    public function destroy(Message $message)
+    {
+        $user = auth()->user();
+
+        // Access check: only the sender can delete their message
+        if ($message->sender_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete attachment if exists
+        if ($message->attachment_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($message->attachment_path);
+        }
+
+        $message->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Message deleted successfully.'
+            ]);
+        }
+
+        return back()->with('success', 'Message deleted.');
+    }
 }

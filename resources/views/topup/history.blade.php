@@ -1,30 +1,33 @@
 @extends('layouts.app')
-@section('title', 'Top-Up History')
+@section('title', 'Riwayat Top-Up')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Top-Up History</h1>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                <i class="fas fa-history text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Riwayat Top-Up</h1>
         </div>
-        <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2 self-start sm:self-auto">
-            <i class="fas fa-plus"></i> New Top Up
+        <a href="{{ route('wallet.topup.create') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+            <i class="fas fa-plus"></i> Isi Saldo Baru
         </a>
     </div>
 
     {{-- Balance Summary --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="text-sm text-gray-500">Available Balance</div>
-            <div class="text-2xl font-bold text-gray-900 mt-1">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5">
+            <div class="text-sm text-gray-500 font-medium">Saldo Tersedia</div>
+            <div class="text-2xl font-extrabold text-gray-900 mt-1">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="text-sm text-gray-500">Total Topped Up</div>
-            <div class="text-2xl font-bold text-green-600 mt-1">Rp {{ number_format($topUps->getCollection()->where('status','success')->sum('amount'), 0, ',', '.') }}</div>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5">
+            <div class="text-sm text-gray-500 font-medium">Total Top-Up Berhasil</div>
+            <div class="text-2xl font-extrabold text-emerald-600 mt-1">Rp {{ number_format($topUps->getCollection()->where('status','success')->sum('amount'), 0, ',', '.') }}</div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="text-sm text-gray-500">All Transactions</div>
-            <div class="text-2xl font-bold text-gray-900 mt-1">{{ $topUps->total() }}</div>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-5">
+            <div class="text-sm text-gray-500 font-medium">Seluruh Transaksi</div>
+            <div class="text-2xl font-extrabold text-gray-900 mt-1">{{ $topUps->total() }}</div>
         </div>
     </div>
 
@@ -40,7 +43,7 @@
     </div>
 
     {{-- History Table --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
         {{-- Mobile Card View --}}
         <div class="sm:hidden divide-y divide-gray-100">
             @forelse($topUps as $topUp)

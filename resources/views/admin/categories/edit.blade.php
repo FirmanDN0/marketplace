@@ -1,13 +1,16 @@
 @extends('layouts.app')
-@section('title', 'Edit Category')
+@section('title', 'Edit Kategori')
 @section('content')
 <div class="max-w-2xl mx-auto">
 
-    <div class="flex items-center gap-4 mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Edit: {{ $category->name }}</h1>
+    <div class="flex items-center gap-4 mb-8">
+        <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-teal-500/20">
+            <i class="fas fa-edit text-sm"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Edit: {{ $category->name }}</h1>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
         <div class="p-6">
             @if($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
@@ -55,8 +58,8 @@
                     <label for="is_active" class="text-sm text-gray-700">Active (visible on site)</label>
                 </div>
                 <div class="flex items-center gap-3 pt-2">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition">Save Changes</button>
-                    <a href="{{ route('admin.categories.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-medium transition">Cancel</a>
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-500/15">Simpan Perubahan</button>
+                    <a href="{{ route('admin.categories.index') }}" class="text-gray-500 hover:text-gray-700 text-sm font-bold transition">Batal</a>
                 </div>
             </form>
         </div>

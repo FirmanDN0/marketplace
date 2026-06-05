@@ -1,18 +1,21 @@
 @extends('layouts.app')
-@section('title', 'Service Detail')
+@section('title', 'Detail Layanan')
 @section('content')
 <div class="max-w-6xl mx-auto">
 
-    <div class="flex items-center gap-4 mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Service Detail</h1>
+    <div class="flex items-center gap-4 mb-8">
+        <div class="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-violet-500/20">
+            <i class="fas fa-briefcase text-sm"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Detail Layanan</h1>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Main --}}
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="font-semibold text-gray-900">{{ $service->title }}</h3>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80 flex items-center justify-between">
+                    <h3 class="font-extrabold text-gray-900">{{ $service->title }}</h3>
                     @php $sc = match($service->status) { 'active' => 'bg-green-100 text-green-700', 'rejected','deleted' => 'bg-red-100 text-red-700', 'paused' => 'bg-yellow-100 text-yellow-700', default => 'bg-gray-100 text-gray-600' }; @endphp
                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc }}">{{ $service->status }}</span>
                 </div>
@@ -77,8 +80,8 @@
 
         {{-- Sidebar --}}
         <div>
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Update Status</h4></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h4 class="font-extrabold text-gray-900">Perbarui Status</h4></div>
                 <div class="p-5">
                     <form method="POST" action="{{ route('admin.services.status', $service->id) }}" class="space-y-4">
                         @csrf @method('PATCH')
@@ -95,7 +98,7 @@
                             <input type="text" name="rejection_reason" placeholder="Optional"
                                    class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition">Update Status</button>
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-blue-500/15">Perbarui Status</button>
                     </form>
                 </div>
             </div>

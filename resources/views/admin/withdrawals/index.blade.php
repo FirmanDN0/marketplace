@@ -1,13 +1,18 @@
 @extends('layouts.app')
-@section('title', 'Admin: Withdrawals')
+@section('title', 'Admin: Penarikan')
 @section('content')
 <div class="max-w-7xl mx-auto">
 
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Withdrawal Requests</h1>
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+                <i class="fas fa-money-check-alt text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Permintaan Penarikan</h1>
+        </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100">
             <form method="GET" class="flex items-center gap-3">
                 <select name="status" class="rounded-xl border border-gray-200 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">

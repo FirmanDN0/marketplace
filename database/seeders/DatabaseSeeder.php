@@ -33,6 +33,10 @@ class DatabaseSeeder extends Seeder
     {
         // ── Truncate all tables to start fresh ──────────────────────────────────
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        DB::table('dispute_messages')->truncate();
+        DB::table('disputes')->truncate();
+        DB::table('custom_offers')->truncate();
         DB::table('cs_messages')->truncate();
         DB::table('cs_conversations')->truncate();
         DB::table('top_ups')->truncate();
@@ -52,6 +56,7 @@ class DatabaseSeeder extends Seeder
         DB::table('user_profiles')->truncate();
         DB::table('categories')->truncate();
         DB::table('users')->truncate();
+
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $now = now();
@@ -93,16 +98,60 @@ class DatabaseSeeder extends Seeder
             'email_verified_at'   => $now,
         ]);
         UserProfile::create([
-            'user_id'          => $provider1->id,
-            'bio'              => 'Profesional berpengalaman di bidang pengembangan web dan desain sistem Laravel.',
-            'skills'           => ['Laravel', 'Vue.js', 'UI/UX Design', 'TailwindCSS'],
-            'country'          => 'Indonesia',
-            'city'             => 'Jakarta',
-            'languages'        => ['Bahasa Indonesia', 'English'],
-            'experience_years' => 5,
-            'hourly_rate'      => 150000,
-            'balance'          => 2400000.00,
-            'total_earned'     => 3200000.00,
+            'user_id'              => $provider1->id,
+            'bio'                  => 'Profesional berpengalaman di bidang pengembangan web dan desain sistem Laravel.',
+            'skills'               => ['Laravel', 'Vue.js', 'UI/UX Design', 'TailwindCSS'],
+            'country'              => 'Indonesia',
+            'city'                 => 'Jakarta',
+            'languages'            => ['Bahasa Indonesia', 'English'],
+            'experience_years'     => 5,
+            'hourly_rate'          => 150000,
+            'balance'              => 2400000.00,
+            'total_earned'         => 3200000.00,
+            'is_verified_provider' => true,
+        ]);
+
+        \App\Models\ProviderPortfolio::insert([
+            [
+                'provider_id' => $provider1->id,
+                'title'       => 'E-Commerce Dashboard',
+                'description' => 'Dashboard admin lengkap dengan grafik penjualan dan manajemen inventaris.',
+                'media_path'  => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=500&q=80',
+                'media_type'  => 'image',
+                'sort_order'  => 1,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ],
+            [
+                'provider_id' => $provider1->id,
+                'title'       => 'Sistem Booking Klinik',
+                'description' => 'Aplikasi web untuk penjadwalan pasien dan rekam medis elektronik.',
+                'media_path'  => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=500&q=80',
+                'media_type'  => 'image',
+                'sort_order'  => 2,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ],
+            [
+                'provider_id' => $provider1->id,
+                'title'       => 'Company Profile Startup',
+                'description' => 'Website modern yang menawan untuk startup teknologi berbasis di Jakarta.',
+                'media_path'  => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=500&q=80',
+                'media_type'  => 'image',
+                'sort_order'  => 3,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ],
+            [
+                'provider_id' => $provider1->id,
+                'title'       => 'Sistem Kasir (POS)',
+                'description' => 'Point of Sales responsif yang bekerja secara realtime.',
+                'media_path'  => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=500&q=80',
+                'media_type'  => 'image',
+                'sort_order'  => 4,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ]
         ]);
 
         $provider2 = User::create([
@@ -260,7 +309,7 @@ class DatabaseSeeder extends Seeder
             'features'      => ['Halaman Produk Tak Terbatas', 'Keranjang Belanja & Checkout', 'Integrasi Payment Gateway', 'Fitur Admin Lengkap', 'Garansi Error 1 Bulan'],
         ]);
 
-        ServiceImage::create(['service_id' => $service1->id, 'image_path' => 'services/sample_web_cover.jpg', 'is_cover' => true, 'sort_order' => 1]);
+        ServiceImage::create(['service_id' => $service1->id, 'image_path' => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80', 'is_cover' => true, 'sort_order' => 1]);
 
         // Service 2: UI/UX Figma (Provider 2 - Sarah)
         $service2 = Service::create([
@@ -309,7 +358,7 @@ class DatabaseSeeder extends Seeder
             'features'      => ['Hingga 15 Halaman UI', 'User Flow & Wireframe', 'Prototyping Interaktif Penuh', 'Asset Ekspor Siap Pakai', 'Akses File Figma Original'],
         ]);
 
-        ServiceImage::create(['service_id' => $service2->id, 'image_path' => 'services/sample_ui_cover.jpg', 'is_cover' => true, 'sort_order' => 1]);
+        ServiceImage::create(['service_id' => $service2->id, 'image_path' => 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80', 'is_cover' => true, 'sort_order' => 1]);
 
         // Service 3: Video Editing (Provider 3 - Alex)
         $service3 = Service::create([
@@ -358,8 +407,38 @@ class DatabaseSeeder extends Seeder
             'features'      => ['Durasi Maksimal 5 Menit', 'Editing Tingkat Lanjut', 'Sound Design & Mixing Premium', 'Motion Graphics & Tracking Lengkap', 'Color Grading Sinematik'],
         ]);
 
-        ServiceImage::create(['service_id' => $service3->id, 'image_path' => 'services/sample_video_cover.jpg', 'is_cover' => true, 'sort_order' => 1]);
+        ServiceImage::create(['service_id' => $service3->id, 'image_path' => 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=600&q=80', 'is_cover' => true, 'sort_order' => 1]);
 
+
+        // ─── 3.5 Seeding Vouchers ───────────────────────────────────────────
+        $this->command->info('Creating Promo Vouchers...');
+
+        \App\Models\Voucher::insert([
+            [
+                'code'         => 'DISKON50K',
+                'type'         => 'fixed',
+                'value'        => 50000.00,
+                'min_purchase' => 100000.00,
+                'max_discount' => null,
+                'quota'        => 100,
+                'used_count'   => 0,
+                'valid_until'  => $now->copy()->addMonths(1),
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ],
+            [
+                'code'         => 'MANTAP10',
+                'type'         => 'percentage',
+                'value'        => 10.00,
+                'min_purchase' => 500000.00,
+                'max_discount' => 100000.00,
+                'quota'        => 50,
+                'used_count'   => 0,
+                'valid_until'  => $now->copy()->addMonths(1),
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ]
+        ]);
 
         // ─── 4. Seeding Orders, Payments, Transactions, Reviews ──────────────
         $this->command->info('Creating Orders, Payments, Transactions & Reviews...');
@@ -372,8 +451,9 @@ class DatabaseSeeder extends Seeder
             'service_id'                => $service1->id,
             'package_id'                => $pkg1Standard->id,
             'price'                     => 1500000.00,
-            'platform_fee'              => 150000.00,
-            'provider_earning'          => 1350000.00,
+            'tax_fee'                   => 150000.00,
+            'discount'                  => 0,
+            'grand_total'               => 1650000.00,
             'status'                    => 'completed',
             'delivery_deadline'         => $now->copy()->subDays(3),
             'notes'                     => 'Tolong buatkan website company profile untuk klinik gigi saya.',
@@ -388,7 +468,7 @@ class DatabaseSeeder extends Seeder
         $payment1 = Payment::create([
             'order_id'               => $order1->id,
             'user_id'                => $customer1->id,
-            'amount'                 => 1500000.00,
+            'amount'                 => 1650000.00,
             'payment_method'         => 'balance',
             'status'                 => 'success',
             'paid_at'                => $now->copy()->subDays(10),
@@ -406,8 +486,8 @@ class DatabaseSeeder extends Seeder
             'user_id'        => $customer1->id,
             'payment_id'     => $payment1->id,
             'type'           => 'payment',
-            'amount'         => -1500000.00,
-            'balance_before' => 6500000.00,
+            'amount'         => -1650000.00,
+            'balance_before' => 6650000.00,
             'balance_after'  => 5000000.00,
             'description'    => "Pembayaran saldo untuk Order #{$order1->order_number}",
             'reference_id'   => $order1->order_number,
@@ -418,8 +498,8 @@ class DatabaseSeeder extends Seeder
             'user_id'        => $provider1->id,
             'payment_id'     => $payment1->id,
             'type'           => 'earning',
-            'amount'         => 1350000.00,
-            'balance_before' => 1050000.00,
+            'amount'         => 1500000.00,
+            'balance_before' => 900000.00,
             'balance_after'  => 2400000.00,
             'description'    => "Earning untuk Order #{$order1->order_number}",
             'reference_id'   => $order1->order_number,
@@ -459,8 +539,9 @@ class DatabaseSeeder extends Seeder
             'service_id'                => $service2->id,
             'package_id'                => $pkg2Standard->id,
             'price'                     => 1200000.00,
-            'platform_fee'              => 120000.00,
-            'provider_earning'          => 1080000.00,
+            'tax_fee'                   => 120000.00,
+            'discount'                  => 0,
+            'grand_total'               => 1320000.00,
             'status'                    => 'in_progress',
             'delivery_deadline'         => $now->copy()->addDays(2),
             'notes'                     => 'Desain UI/UX untuk aplikasi mobile e-learning anak-anak.',
@@ -471,7 +552,7 @@ class DatabaseSeeder extends Seeder
         $payment2 = Payment::create([
             'order_id'               => $order2->id,
             'user_id'                => $customer2->id,
-            'amount'                 => 1200000.00,
+            'amount'                 => 1320000.00,
             'payment_method'         => 'midtrans',
             'status'                 => 'success',
             'paid_at'                => $now->copy()->subDays(3),
@@ -482,8 +563,8 @@ class DatabaseSeeder extends Seeder
             'user_id'        => $customer2->id,
             'payment_id'     => $payment2->id,
             'type'           => 'payment',
-            'amount'         => -1200000.00,
-            'balance_before' => 4700000.00,
+            'amount'         => -1320000.00,
+            'balance_before' => 4820000.00,
             'balance_after'  => 3500000.00,
             'description'    => "Pembayaran Midtrans untuk Order #{$order2->order_number}",
             'reference_id'   => $order2->order_number,
@@ -498,8 +579,9 @@ class DatabaseSeeder extends Seeder
             'service_id'                => $service3->id,
             'package_id'                => $pkg3Basic->id,
             'price'                     => 100000.00,
-            'platform_fee'              => 10000.00,
-            'provider_earning'          => 90000.00,
+            'tax_fee'                   => 10000.00,
+            'discount'                  => 0,
+            'grand_total'               => 110000.00,
             'status'                    => 'delivered',
             'delivery_deadline'         => $now->copy()->subHours(12),
             'notes'                     => 'Tolong edit video traveling 1 menit ini untuk Reels Instagram.',
@@ -513,7 +595,7 @@ class DatabaseSeeder extends Seeder
         $payment3 = Payment::create([
             'order_id'               => $order3->id,
             'user_id'                => $customer3->id,
-            'amount'                 => 100000.00,
+            'amount'                 => 110000.00,
             'payment_method'         => 'balance',
             'status'                 => 'success',
             'paid_at'                => $now->copy()->subDays(2),
@@ -524,11 +606,97 @@ class DatabaseSeeder extends Seeder
             'user_id'        => $customer3->id,
             'payment_id'     => $payment3->id,
             'type'           => 'payment',
-            'amount'         => -100000.00,
-            'balance_before' => 1600000.00,
+            'amount'         => -110000.00,
+            'balance_before' => 1610000.00,
             'balance_after'  => 1500000.00,
             'description'    => "Pembayaran saldo untuk Order #{$order3->order_number}",
             'reference_id'   => $order3->order_number,
+        ]);
+
+        // --- Scenario 4: Auto-Complete Candidate (Delivered > 3 days ago) ---
+        $order4 = Order::create([
+            'order_number'              => 'ORD-SMX99999',
+            'customer_id'               => $customer2->id,
+            'provider_id'               => $provider1->id,
+            'service_id'                => $service1->id,
+            'package_id'                => $pkg1Standard->id,
+            'price'                     => 1500000.00,
+            'tax_fee'                   => 150000.00,
+            'discount'                  => 0,
+            'grand_total'               => 1650000.00,
+            'status'                    => 'delivered',
+            'delivery_deadline'         => $now->copy()->subDays(5),
+            'notes'                     => 'Tolong buatkan landing page sederhana saja.',
+            'requirements'              => 'Data lengkap terlampir',
+            'requirements_submitted_at' => $now->copy()->subDays(10),
+            'delivery_file'             => 'deliveries/landing_page_demo.zip',
+            'delivery_message'          => 'Halo Kak, pesanan sudah saya selesaikan dan lampirkan.',
+            'delivered_at'              => $now->copy()->subDays(4), // 4 days ago
+        ]);
+        Payment::create([
+            'order_id'               => $order4->id,
+            'user_id'                => $customer2->id,
+            'amount'                 => 1650000.00,
+            'payment_method'         => 'balance',
+            'status'                 => 'success',
+            'paid_at'                => $now->copy()->subDays(10),
+            'gateway_transaction_id' => 'WALLET-' . $order4->order_number,
+        ]);
+
+        // --- Scenario 5: Disputed Order ---
+        $order5 = Order::create([
+            'order_number'              => 'ORD-SMX88888',
+            'customer_id'               => $customer1->id,
+            'provider_id'               => $provider2->id,
+            'service_id'                => $service2->id,
+            'package_id'                => $pkg2Standard->id,
+            'price'                     => 1200000.00,
+            'tax_fee'                   => 120000.00,
+            'discount'                  => 0,
+            'grand_total'               => 1320000.00,
+            'status'                    => 'disputed',
+            'delivery_deadline'         => $now->copy()->subDays(2),
+            'notes'                     => 'UI UX harus mirip referensi Dribbble.',
+            'requirements'              => 'Warna utama biru dan putih',
+            'requirements_submitted_at' => $now->copy()->subDays(5),
+            'delivery_file'             => 'deliveries/figma_design.zip',
+            'delivery_message'          => 'Berikut hasil desainnya.',
+            'delivered_at'              => $now->copy()->subDays(1),
+        ]);
+        Payment::create([
+            'order_id'               => $order5->id,
+            'user_id'                => $customer1->id,
+            'amount'                 => 1320000.00,
+            'payment_method'         => 'balance',
+            'status'                 => 'success',
+            'paid_at'                => $now->copy()->subDays(5),
+            'gateway_transaction_id' => 'WALLET-' . $order5->order_number,
+        ]);
+
+        $dispute = Dispute::create([
+            'order_id'    => $order5->id,
+            'opened_by'   => $customer1->id,
+            'reason'      => 'Desain tidak mirip dengan referensi sama sekali',
+            'description' => 'Warna yang digunakan hijau dan kuning, bukan biru putih.',
+            'status'      => 'open',
+            'created_at'  => $now->copy()->subHours(12),
+        ]);
+
+        \App\Models\DisputeMessage::create([
+            'dispute_id' => $dispute->id,
+            'user_id'    => $customer1->id,
+            'type'       => 'text',
+            'message'    => 'Saya sangat kecewa, hasil desainnya tidak sesuai dengan brief awal yang meminta dominasi biru putih.',
+            'created_at' => $now->copy()->subHours(12),
+        ]);
+
+        \App\Models\DisputeMessage::create([
+            'dispute_id' => $dispute->id,
+            'user_id'    => $provider2->id,
+            'type'       => 'refund_proposal',
+            'message'    => 'Mohon maaf atas kesalahan ini, saya bersedia mengembalikan dana sebesar 50% jika kakak berkenan.',
+            'refund_percentage' => 50,
+            'created_at' => $now->copy()->subHours(10),
         ]);
 
 
@@ -571,6 +739,27 @@ class DatabaseSeeder extends Seeder
             'created_at'      => $now->copy()->subDays(7)->addMinutes(30),
         ]);
 
+        $customOffer = \App\Models\CustomOffer::create([
+            'conversation_id' => $conv->id,
+            'provider_id'     => $provider1->id,
+            'customer_id'     => $customer1->id,
+            'service_id'      => $service1->id,
+            'title'           => 'Website Company Profile Lengkap (Custom)',
+            'description'     => 'Website 5 halaman, termasuk panel admin, sistem booking custom dengan konfirmasi WA.',
+            'price'           => 1800000.00,
+            'delivery_days'   => 10,
+            'status'          => 'pending',
+            'created_at'      => \Carbon\Carbon::create(2026, 5, 11, 15, 0, 0),
+        ]);
+
+        Message::create([
+            'conversation_id' => $conv->id,
+            'sender_id'       => $provider1->id,
+            'custom_offer_id' => $customOffer->id,
+            'message_text'    => null,
+            'created_at'      => \Carbon\Carbon::create(2026, 5, 11, 15, 0, 0),
+        ]);
+
         // Exact match with User Screenshot for live/recent feel
         // Message 5: Customer "ok" (11 May 15:37)
         Message::create([
@@ -581,18 +770,19 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Message 6: Customer "jancok" (19 May 10:38)
-        Message::create([
+        $msg6 = Message::create([
             'conversation_id' => $conv->id,
             'sender_id'       => $customer1->id,
             'message_text'    => 'jancok',
             'created_at'      => \Carbon\Carbon::create(2026, 5, 19, 10, 38, 0),
         ]);
 
-        // Message 7: Provider Demo "Ip kon, gendeng a kon?" (19 May 10:39)
+        // Message 7: Provider Demo "Ip kon, gendeng a kon?" (19 May 10:39) - Merespon Message 6
         Message::create([
             'conversation_id' => $conv->id,
             'sender_id'       => $provider1->id,
             'message_text'    => 'Ip kon, gendeng a kon?',
+            'reply_to_id'     => $msg6->id,
             'created_at'      => \Carbon\Carbon::create(2026, 5, 19, 10, 39, 0),
         ]);
 

@@ -1,12 +1,17 @@
 @extends('layouts.app')
-@section('title', 'Admin: Services')
+@section('title', 'Admin: Layanan')
 @section('content')
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-    <h1 class="text-2xl font-bold text-gray-900">All Services</h1>
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
+            <i class="fas fa-store text-lg"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Semua Layanan</h1>
+    </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+<div class="bg-white rounded-3xl border border-gray-100/80 overflow-hidden shadow-sm">
     <div class="px-6 py-4 border-b border-gray-100">
         <form method="GET" action="{{ route('admin.services.index') }}" class="flex flex-wrap items-center gap-3">
             <div class="relative flex-1 min-w-[200px]">

@@ -16,8 +16,10 @@ return new class extends Migration
             $table->foreignId('service_id')->constrained('services')->onDelete('restrict');
             $table->foreignId('package_id')->constrained('service_packages')->onDelete('restrict');
             $table->decimal('price', 12, 2);
-            $table->decimal('platform_fee', 12, 2)->default(0);
-            $table->decimal('provider_earning', 12, 2)->default(0);
+            $table->decimal('tax_fee', 12, 2)->default(0); // Dibebankan ke Klien
+            $table->decimal('discount', 12, 2)->default(0); // Potongan dari voucher
+            $table->decimal('grand_total', 12, 2)->default(0); // Harga akhir yang dibayar Klien
+            $table->foreignId('voucher_id')->nullable()->constrained('vouchers')->onDelete('set null');
             $table->enum('status', [
                 'pending_payment','paid','in_progress',
                 'delivered','completed','cancelled','disputed'

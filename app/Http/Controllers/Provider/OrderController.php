@@ -54,7 +54,7 @@ class OrderController extends Controller
 
         $filePath = null;
         if ($request->hasFile('delivery_file')) {
-            $filePath = $request->file('delivery_file')->store('deliveries', 'public');
+            $filePath = $request->file('delivery_file')->store('deliveries');
         }
 
         $this->orderService->deliver($order, $data['delivery_message'], $filePath);

@@ -108,5 +108,10 @@ class User extends Authenticatable
     {
         return $this->favorites()->where('service_id', $serviceId)->exists();
     }
+
+    public function portfolios()
+    {
+        return $this->hasMany(ProviderPortfolio::class, 'provider_id')->orderBy('sort_order', 'asc');
+    }
 }
 

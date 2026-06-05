@@ -1,21 +1,28 @@
 @extends('layouts.app')
-@section('title', 'Order Details')
+@section('title', 'Detail Pesanan')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex items-center gap-4 mb-6 flex-wrap">
-        <h1 class="text-2xl font-bold text-gray-900">Order {{ $order->order_number }}</h1>
-        @php $sc = match($order->status) { 'completed' => 'bg-green-100 text-green-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
-        <span class="{{ $sc }} text-xs font-semibold px-3 py-1.5 rounded-full">{{ str_replace('_',' ',$order->status) }}</span>
+    <div class="flex items-center gap-4 mb-8 flex-wrap">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/20"><i class="fas fa-receipt text-sm"></i></div>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Pesanan {{ $order->order_number }}</h1>
+        @php $sc = match($order->status) { 'completed' => 'bg-emerald-100 text-emerald-700', 'in_progress','paid' => 'bg-blue-100 text-blue-700', 'cancelled','disputed' => 'bg-red-100 text-red-700', 'delivered' => 'bg-indigo-100 text-indigo-700', default => 'bg-yellow-100 text-yellow-700' }; @endphp
+        <span class="{{ $sc }} text-xs font-bold px-3 py-1.5 rounded-full">{{ str_replace('_',' ',$order->status) }}</span>
         @if($order->revision_count > 0)
-            <span class="bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full"><i class="fas fa-sync-alt mr-1"></i>Revision #{{ $order->revision_count }}</span>
+            <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-full"><i class="fas fa-sync-alt mr-1"></i>Revisi #{{ $order->revision_count }}</span>
+        @endif
+        
+        @if(!in_array($order->status, ['pending_payment', 'cancelled']))
+            <a href="{{ route('orders.invoice', $order->id) }}" target="_blank" class="ml-auto inline-flex items-center gap-2 bg-white border border-gray-200/80 text-gray-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 px-4 py-2.5 rounded-2xl text-sm font-bold transition shadow-sm hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                <i class="fas fa-file-invoice text-blue-500"></i> Unduh Invoice
+            </a>
         @endif
     </div>
 
     {{-- Visual Order Timeline --}}
     @if(!in_array($order->status, ['pending_payment', 'cancelled']))
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 mb-6">
         @php
             $steps = [
                 'paid' => ['icon' => 'fa-receipt', 'label' => 'Order Placed'],
@@ -98,15 +105,21 @@
         {{-- Left Column --}}
         <div class="lg:col-span-2 space-y-6">
             {{-- Order Info --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Order Info</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-info-circle text-blue-500 text-sm"></i>Info Pesanan</h3></div>
                 <div class="p-5 space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Service</div><p class="text-sm text-gray-900 font-medium">{{ optional($order->service)->title }}</p></div>
-                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Provider</div><p class="text-sm text-gray-900">{{ optional($order->provider)->name }}</p></div>
+                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Provider</div><p class="flex items-center gap-1 text-sm text-gray-900">{{ optional($order->provider)->name }} <x-verified-badge :user="$order->provider" /></p></div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Package</div><p class="text-sm text-gray-900">{{ optional($order->package)->name }} <span class="text-gray-400">({{ optional($order->package)->package_type }})</span></p></div>
+                        <div><div class="text-xs text-gray-400 uppercase font-medium mb-1">Package/Offer</div><p class="text-sm text-gray-900">
+                            @if($order->package)
+                                {{ $order->package->name }} <span class="text-gray-400">({{ $order->package->package_type }})</span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-orange-600 font-semibold"><i class="fas fa-file-invoice-dollar"></i> Custom Offer</span>
+                            @endif
+                        </p></div>
                         <div>
                             <div class="text-xs text-gray-400 uppercase font-medium mb-1">Delivery Deadline</div>
                             @if($order->delivery_deadline)
@@ -145,12 +158,12 @@
 
             {{-- Requirements Submitted --}}
             @if($order->requirements_submitted_at)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900"><i class="fas fa-clipboard-check text-green-600 mr-1"></i> Your Requirements</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-clipboard-check text-emerald-500 text-sm"></i>Persyaratan Anda</h3></div>
                 <div class="p-5">
                     <p class="text-sm text-gray-700 mb-3 whitespace-pre-wrap">{{ $order->requirements }}</p>
                     @if($order->requirements_file)
-                        <a href="{{ Storage::url($order->requirements_file) }}" target="_blank" class="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
+                        <a href="{{ route('attachments.requirements', $order->id) }}" target="_blank" class="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition">
                             <i class="fas fa-paperclip"></i> View Attached File
                         </a>
                     @endif
@@ -161,12 +174,12 @@
 
             {{-- Delivery --}}
             @if($order->delivery_message)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900"><i class="fas fa-box text-blue-600 mr-1"></i> Delivery from Provider</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-box text-blue-500 text-sm"></i>Pengiriman dari Penyedia</h3></div>
                 <div class="p-5">
                     <p class="text-sm text-gray-700 mb-3">{{ $order->delivery_message }}</p>
                     @if($order->delivery_file)
-                        <a href="{{ Storage::url($order->delivery_file) }}" download class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition">
+                        <a href="{{ route('attachments.delivery', $order->id) }}" download class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition">
                             <i class="fas fa-download"></i> Download File
                         </a>
                     @endif
@@ -187,8 +200,8 @@
 
             {{-- Review --}}
             @if($order->review)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Your Review</h3></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-star text-amber-400 text-sm"></i>Ulasan Anda</h3></div>
                 <div class="p-5">
                     <div class="text-yellow-400 mb-2">{!! str_repeat('<i class="fas fa-star"></i>',$order->review->rating) !!}{!! str_repeat('<i class="far fa-star text-gray-300"></i>',5-$order->review->rating) !!}</div>
                     <p class="text-sm text-gray-700">{{ $order->review->comment }}</p>
@@ -206,8 +219,8 @@
         {{-- Right Column - Actions --}}
         <div class="space-y-6">
             {{-- Contact Provider --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Message Provider</h4></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h4 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-comment-dots text-indigo-500 text-sm"></i>Hubungi Penyedia</h4></div>
                 <div class="p-5">
                     <form method="POST" action="{{ route('messages.start') }}">
                         @csrf
@@ -220,9 +233,19 @@
                 </div>
             </div>
 
+            @if($order->isDisputed() && $order->dispute)
+            <div class="bg-red-50 rounded-2xl shadow-sm border border-red-100 overflow-hidden mb-6 p-5 text-center">
+                <h4 class="font-bold text-red-900 mb-2"><i class="fas fa-gavel text-red-600 mr-1"></i> Sengketa Aktif</h4>
+                <p class="text-xs text-red-700 mb-4">Pesanan ini sedang dalam sengketa. Silakan berkomunikasi, unggah bukti, atau ajukan refund di Pusat Resolusi.</p>
+                <a href="{{ route('disputes.show', $order->dispute->id) }}" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition inline-flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-balance-scale"></i> Buka Pusat Resolusi
+                </a>
+            </div>
+            @endif
+
             @if($order->isDelivered())
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Review Delivery</h4></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h4 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-check-double text-emerald-500 text-sm"></i>Tinjau Pengiriman</h4></div>
                 <div class="p-5 space-y-4">
                     <form method="POST" action="{{ route('customer.orders.accept', $order->id) }}"
                           onsubmit="return confirm('Accept delivery and complete the order?')">
@@ -280,15 +303,44 @@
             @endif
 
             @if(in_array($order->status, ['pending_payment', 'paid']))
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100"><h4 class="font-semibold text-gray-900">Cancel Order</h4></div>
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100/80"><h4 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-times-circle text-red-500 text-sm"></i>Batalkan Pesanan</h4></div>
                 <div class="p-5">
                     <form method="POST" action="{{ route('customer.orders.cancel', $order->id) }}"
-                          onsubmit="return confirm('Cancel this order?')" class="space-y-3">
+                          onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')" class="space-y-4">
                         @csrf @method('PATCH')
-                        <input type="text" name="reason" placeholder="Reason for cancellation" required
-                               class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition">Cancel Order</button>
+                        <div>
+                            <select id="cancelReasonSelect" name="reason" required
+                                    class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent bg-gray-50 cursor-pointer"
+                                    onchange="
+                                        const otherInput = document.getElementById('cancelReasonText');
+                                        if(this.value === 'Lainnya') {
+                                            this.removeAttribute('name');
+                                            otherInput.setAttribute('name', 'reason');
+                                            otherInput.classList.remove('hidden');
+                                            otherInput.setAttribute('required', 'required');
+                                            otherInput.focus();
+                                        } else {
+                                            this.setAttribute('name', 'reason');
+                                            otherInput.removeAttribute('name');
+                                            otherInput.classList.add('hidden');
+                                            otherInput.removeAttribute('required');
+                                        }
+                                    ">
+                                <option value="" disabled selected>Pilih Alasan Pembatalan...</option>
+                                <option value="Ingin mengubah rincian pesanan/layanan">Ingin mengubah rincian pesanan/layanan</option>
+                                <option value="Ingin mengubah metode pembayaran">Ingin mengubah metode pembayaran</option>
+                                <option value="Penjual lambat/tidak membalas pesan">Penjual lambat/tidak membalas pesan</option>
+                                <option value="Menemukan penawaran harga yang lebih baik">Menemukan penawaran harga yang lebih baik</option>
+                                <option value="Berubah pikiran">Berubah pikiran</option>
+                                <option value="Lainnya">Lainnya (Tulis manual)</option>
+                            </select>
+                            <input type="text" id="cancelReasonText" placeholder="Ketik alasan pembatalan Anda..."
+                                   class="hidden w-full mt-3 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2">
+                            <i class="fas fa-times-circle"></i> Batalkan Pesanan
+                        </button>
                     </form>
                 </div>
             </div>

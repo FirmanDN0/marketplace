@@ -4,10 +4,13 @@
 <div class="max-w-4xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex items-center gap-3 mb-4">
+    <div class="flex items-center gap-4 mb-6">
+        <a href="{{ route('customer-service.index') }}" class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-white border border-gray-100/80 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 shadow-sm transition-all duration-200 shrink-0">
+            <i class="fas fa-arrow-left text-sm"></i>
+        </a>
         <div class="flex-1 min-w-0">
-            <h1 class="text-lg font-bold text-gray-900 truncate">{{ $conversation->subject ?? 'Percakapan' }}</h1>
-            <p class="text-xs text-gray-400">Dimulai {{ $conversation->created_at->format('d M Y, H:i') }}</p>
+            <h1 class="text-lg font-extrabold text-gray-900 truncate tracking-tight">{{ $conversation->subject ?? 'Percakapan' }}</h1>
+            <p class="text-xs text-gray-400 font-medium">Dimulai {{ $conversation->created_at->format('d M Y, H:i') }}</p>
         </div>
         @php
             $hasAgentReply = $messages->contains(fn($m) => $m->isAgent());
@@ -19,9 +22,6 @@
             };
         @endphp
         <span id="cs-status-badge" class="{{ $statusConfig['color'] }} text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"><i class="fas {{ $statusConfig['icon'] }} mr-1"></i>{{ $statusConfig['label'] }}</span>
-        <span id="rt-live" class="text-xs text-green-500 font-medium flex items-center gap-1 opacity-0 transition-opacity duration-300 flex-shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Live
-        </span>
     </div>
 
     @if(session('error'))
@@ -42,7 +42,7 @@
     </div>
 
     {{-- Chat Box --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col" style="height: 60vh;">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden flex flex-col" style="height: 60vh;">
         {{-- Chat header bar --}}
         <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
             <div class="flex items-center gap-2 text-xs text-gray-500">
@@ -50,15 +50,7 @@
                 <span id="msg-count">{{ $messages->count() }} pesan</span>
             </div>
             <div class="flex items-center gap-2" id="escalate-area">
-                @if($conversation->isAi())
-                <form action="{{ route('customer-service.escalate', $conversation->id) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" onclick="return confirm('Hubungkan ke CS manusia?')"
-                            class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5">
-                        <i class="fas fa-headset"></i> Minta CS Manusia
-                    </button>
-                </form>
-                @endif
+                {{-- Escalate button removed to prevent double buttons. We use the bottom banner instead. --}}
             </div>
         </div>
 
@@ -160,7 +152,7 @@
                 @csrf
                 <textarea id="cs-input" name="message" rows="2" placeholder="Ketik pesan Anda…" required maxlength="3000"
                     class="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"></textarea>
-                <button type="submit" id="cs-send-btn" class="bg-blue-600 hover:bg-blue-700 text-white w-11 h-11 rounded-xl font-medium text-sm transition flex items-center justify-center flex-shrink-0 shadow-sm">
+                <button type="submit" id="cs-send-btn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white w-11 h-11 rounded-2xl font-medium text-sm transition-all flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/15">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
@@ -174,7 +166,7 @@
 
     {{-- Hubungi CS Banner (only for AI mode) --}}
     <div id="cs-escalate-banner" class="{{ $conversation->isAi() ? '' : 'hidden' }}">
-    <div class="mt-4 bg-white rounded-2xl p-4 border border-indigo-100 flex items-center justify-between shadow-sm">
+    <div class="mt-4 bg-white rounded-3xl p-5 border border-indigo-100/80 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
                 <i class="fas fa-headset"></i>
@@ -187,7 +179,7 @@
         <form action="{{ route('customer-service.escalate', $conversation->id) }}" method="POST">
             @csrf
             <button type="submit" onclick="return confirm('Hubungkan ke CS manusia?')"
-                    class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-200">
+                    class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
                 Hubungi CS
             </button>
         </form>
@@ -196,10 +188,10 @@
 
     {{-- Bottom Actions --}}
     <div class="flex flex-wrap gap-3 mt-4">
-        <a href="{{ route('customer-service.index') }}" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium transition inline-flex items-center gap-2">
+        <a href="{{ route('customer-service.index') }}" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-100/80 px-4 py-2 rounded-2xl text-sm font-bold transition inline-flex items-center gap-2">
             <i class="fas fa-list"></i> Semua Percakapan
         </a>
-        <a href="{{ route('customer-service.start') }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl text-sm font-medium transition inline-flex items-center gap-2">
+        <a href="{{ route('customer-service.start') }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-2xl text-sm font-bold transition inline-flex items-center gap-2">
             <i class="fas fa-plus"></i> Percakapan Baru
         </a>
     </div>
@@ -230,9 +222,6 @@
     // Scroll to bottom
     function scrollBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
     scrollBottom();
-
-    // Show live indicator
-    setTimeout(() => { rtLive.style.opacity = '1'; }, 500);
 
     // Render a CS message
     function renderCsMessage(msg) {

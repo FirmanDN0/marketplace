@@ -5,17 +5,20 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
+                <i class="fas fa-briefcase text-lg"></i>
+            </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Detail Layanan</h1>
-                <p class="text-gray-500 text-sm">Pratinjau bagaimana layanan Anda terlihat</p>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Detail Layanan</h1>
+                <p class="text-gray-500 text-sm font-medium">Pratinjau bagaimana layanan Anda terlihat</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('provider.services.edit', $service) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-200/50 text-sm">
+            <a href="{{ route('provider.services.edit', $service) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/15 text-sm hover:-translate-y-0.5 active:translate-y-0 duration-300">
                 <i class="fas fa-pen"></i> Edit Layanan
             </a>
             @if($service->status === 'active')
-                <a href="{{ route('services.show', $service->slug) }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition shadow-sm text-sm">
+                <a href="{{ route('services.show', $service->slug) }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-100/80 hover:bg-gray-50 text-gray-700 font-bold rounded-2xl transition shadow-sm text-sm">
                     <i class="fas fa-external-link-alt"></i> Lihat di Marketplace
                 </a>
             @endif
@@ -25,7 +28,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- Main Info --}}
         <div class="lg:col-span-2 space-y-8">
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
                 <div class="p-6 md:p-8">
                     <div class="flex items-center justify-between mb-6">
                         @php $sc = match($service->status) { 
@@ -42,7 +45,7 @@
                         </div>
                     </div>
 
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ $service->title }}</h2>
+                    <h2 class="text-2xl font-extrabold text-gray-900 mb-4 tracking-tight">{{ $service->title }}</h2>
                     
                     <div class="flex flex-wrap items-center gap-6 mb-8 py-4 border-y border-gray-50">
                         <div class="flex items-center gap-2">
@@ -96,7 +99,7 @@
 
             {{-- Gallery --}}
             @if($service->images->count() > 0)
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 p-6 md:p-8">
                 <h3 class="text-lg font-bold text-gray-900 mb-6">Galeri Gambar</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     @foreach($service->images as $img)
@@ -114,7 +117,7 @@
 
         {{-- Sidebar - Packages --}}
         <div class="space-y-6">
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden sticky top-24">
                 <div class="p-6 border-b border-gray-50">
                     <h3 class="font-bold text-gray-900">Paket Harga</h3>
                 </div>

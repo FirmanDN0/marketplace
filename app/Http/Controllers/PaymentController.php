@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Notification;
 
 class PaymentController extends Controller
@@ -88,6 +89,7 @@ class PaymentController extends Controller
                     }
                 }
             } catch (\Exception $e) {
+                Log::error('Midtrans API Error in finish callback: ' . $e->getMessage());
                 // Midtrans API error — payment may still be processed via webhook
             }
 

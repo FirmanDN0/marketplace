@@ -27,4 +27,9 @@ class Dispute extends Model
     {
         return $this->belongsTo(User::class, 'resolved_by');
     }
+
+    public function messages()
+    {
+        return $this->hasMany(DisputeMessage::class);
+    }
 }

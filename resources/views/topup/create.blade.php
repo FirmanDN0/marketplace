@@ -1,50 +1,57 @@
 @extends('layouts.app')
-@section('title', 'Top Up Wallet')
+@section('title', 'Isi Saldo')
 @section('content')
 <div class="max-w-xl mx-auto">
 
-
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-100">
-            <h2 class="text-xl font-bold text-gray-900">Top Up Balance</h2>
-            <p class="text-gray-500 text-sm mt-1">Add funds to your wallet</p>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100/80 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                <i class="fas fa-plus text-sm"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Isi Saldo</h2>
+                <p class="text-gray-500 text-sm font-medium mt-0.5">Tambahkan dana ke dompet Anda</p>
+            </div>
         </div>
 
         <div class="px-6 py-5">
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 mb-6">
-                <div class="text-sm text-blue-600 font-medium">Current Balance</div>
-                <div class="text-2xl font-bold text-blue-700">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
+            <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-5 mb-6 text-white relative overflow-hidden">
+                <div class="absolute -top-6 -right-6 w-24 h-24 bg-white/[0.06] rounded-full"></div>
+                <div class="relative">
+                    <div class="text-blue-200/60 text-sm font-semibold mb-0.5">Saldo Saat Ini</div>
+                    <div class="text-2xl font-extrabold tracking-tight">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
+                </div>
             </div>
 
             <form method="POST" action="{{ route('wallet.topup.store') }}" class="space-y-5" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Amount</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Nominal</label>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                         @foreach([10000, 25000, 50000, 100000, 250000, 500000] as $preset)
                         <button type="button" onclick="setAmount({{ $preset }})" id="preset-{{ $preset }}"
-                                class="border-2 border-gray-200 hover:border-blue-500 rounded-xl py-2.5 text-sm font-semibold text-gray-700 transition focus:outline-none">
+                                class="border-2 border-gray-200/80 hover:border-blue-500 rounded-2xl py-2.5 text-sm font-bold text-gray-700 transition focus:outline-none">
                             Rp {{ number_format($preset, 0, ',', '.') }}
                         </button>
                         @endforeach
                     </div>
                     <input type="number" name="amount" id="amount"
-                           placeholder="Or type custom amount (min Rp 10.000)"
+                           placeholder="Atau ketik nominal sendiri (min Rp 10.000)"
                            value="{{ old('amount') }}" min="10000" max="100000000" required
-                           class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full rounded-2xl border border-gray-200/80 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                     @error('amount')<span class="text-red-500 text-xs mt-1">{{ $message }}</span>@enderror
                 </div>
 
-                <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm text-gray-600">
+                <div class="bg-gray-50 border border-gray-100/80 rounded-2xl p-4 text-sm text-gray-600">
                     <i class="fas fa-shield-alt text-blue-600 mr-1"></i>
-                    <strong>Payment via Midtrans</strong><br>
-                    <span class="text-gray-400">Supports: Credit Card, Transfer, GoPay, QRIS, Alfamart, and more.</span>
+                    <strong>Pembayaran via Midtrans</strong><br>
+                    <span class="text-gray-400">Mendukung: Kartu Kredit, Transfer Bank, GoPay, QRIS, Alfamart, dan lainnya.</span>
                 </div>
 
-                <button type="submit" :disabled="submitting" :class="{'opacity-75 cursor-not-allowed': submitting}" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition inline-flex items-center justify-center gap-2">
-                    <span x-show="!submitting" class="inline-flex items-center gap-2">Continue to Payment <i class="fas fa-arrow-right"></i></span>
-                    <span x-show="submitting" x-cloak class="inline-flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
+                <button type="submit" :disabled="submitting" :class="{'opacity-75 cursor-not-allowed': submitting}" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                    <span x-show="!submitting" class="inline-flex items-center gap-2">Lanjutkan ke Pembayaran <i class="fas fa-arrow-right"></i></span>
+                    <span x-show="submitting" x-cloak class="inline-flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Memproses...</span>
                 </button>
             </form>
         </div>

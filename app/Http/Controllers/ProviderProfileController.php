@@ -12,7 +12,7 @@ class ProviderProfileController extends Controller
         $provider = User::where('username', $username)
             ->where('role', 'provider')
             ->where('status', 'active')
-            ->with('profile')
+            ->with(['profile', 'portfolios'])
             ->firstOrFail();
 
         $services = $provider->services()

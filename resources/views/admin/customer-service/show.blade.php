@@ -21,9 +21,6 @@
             <span id="admin-cs-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold {{ $statusColor }}">
                 <i class="fas {{ $statusIcon }}"></i> {{ $statusText }}
             </span>
-            <span id="rt-live" class="text-xs text-green-500 font-medium flex items-center gap-1 opacity-0 transition-opacity duration-300 flex-shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Live
-            </span>
         </div>
     </div>
 
@@ -148,7 +145,6 @@
     const form       = document.getElementById('admin-cs-form');
     const input      = document.getElementById('admin-cs-input');
     const sendBtn    = document.getElementById('admin-cs-send');
-    const rtLive     = document.getElementById('rt-live');
     const emptyEl    = document.getElementById('admin-cs-empty');
     const userInitial = '{{ strtoupper(substr(optional($conversation->user)->name ?? "U", 0, 1)) }}';
 
@@ -160,7 +156,6 @@
 
     function scrollBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
     scrollBottom();
-    setTimeout(() => { rtLive.style.opacity = '1'; }, 500);
 
     function renderAdminMsg(msg) {
         if (emptyEl) emptyEl.remove();

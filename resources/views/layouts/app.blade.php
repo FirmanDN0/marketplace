@@ -20,9 +20,10 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
@@ -47,85 +48,88 @@
 
 {{-- NAVBAR (public/guest pages only) --}}
 @if(!($isDashboard ?? false) || !auth()->check())
-<header class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shadow-sm" x-data="{ mobileOpen: false, userOpen: false }">
+<header class="bg-white/75 backdrop-blur-xl border-b border-blue-100/30 sticky top-0 z-50 transition-all duration-300" x-data="{ mobileOpen: false, userOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
-                <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-10 w-auto object-contain">
+        <div class="flex items-center justify-between h-20">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0 group transition-transform duration-300 active:scale-95">
+                <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
             </a>
 
             <div class="hidden md:flex flex-1 max-w-md mx-8">
                 <form action="{{ route('services.index') }}" method="GET" class="w-full">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari layanan..."
-                               class="w-full pl-10 pr-4 py-2 bg-gray-100 border border-transparent rounded-full text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:bg-white transition-all duration-300">
+                    <div class="relative group">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm transition-colors group-focus-within:text-blue-600"></i>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari layanan profesional..."
+                               class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200/80 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 focus:bg-white transition-all duration-300">
                     </div>
                 </form>
             </div>
 
-            <nav class="hidden md:flex items-center gap-4">
-                <a href="{{ route('services.index') }}" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Jelajahi</a>
+            <nav class="hidden md:flex items-center gap-6">
+                <a href="{{ route('services.index') }}" class="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors duration-200">Jelajahi</a>
                 @auth
-                    <a href="{{ route('messages.index') }}" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition relative">
-                        Pesan
-                        <span data-unread-badge="messages" class="absolute -top-2 -right-4 bg-blue-600 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center {{ $unreadMessages > 0 ? '' : 'hidden' }}">{{ $unreadMessages }}</span>
+                    <a href="{{ route('messages.index') }}" class="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors duration-200 relative p-1">
+                        <i class="fas fa-comment-dots text-base"></i>
+                        <span data-unread-badge="messages" class="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[9px] font-bold rounded-full min-w-3.5 h-3.5 px-0.5 flex items-center justify-center border-2 border-white {{ $unreadMessages > 0 ? '' : 'hidden' }}">{{ $unreadMessages }}</span>
                     </a>
-                    <a href="{{ route('notifications.index') }}" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition relative">
-                        <i class="fas fa-bell"></i>
-                        <span data-unread-badge="notifications" class="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center {{ $unreadNotifs > 0 ? '' : 'hidden' }}">{{ $unreadNotifs }}</span>
+                    <a href="{{ route('notifications.index') }}" class="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors duration-200 relative p-1">
+                        <i class="fas fa-bell text-base"></i>
+                        <span data-unread-badge="notifications" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-3.5 h-3.5 px-0.5 flex items-center justify-center border-2 border-white {{ $unreadNotifs > 0 ? '' : 'hidden' }}">{{ $unreadNotifs }}</span>
                     </a>
                 @else
-                    <a href="{{ route('register') }}" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Jadi Penyedia Jasa</a>
-                    <a href="{{ route('login') }}" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Masuk</a>
-                    <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-full transition shadow-md shadow-blue-200">Daftar</a>
+                    <a href="{{ route('register') }}" class="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors duration-200">Jadi Penyedia Jasa</a>
+                    <a href="{{ route('login') }}" class="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors duration-200">Masuk</a>
+                    <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 py-3 rounded-2xl transition duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-blue-600/15 hover:shadow-xl hover:shadow-blue-600/25">Daftar</a>
                 @endauth
             </nav>
 
             @auth
-            <div class="hidden md:block relative ml-2" @click.away="userOpen = false">
-                <button @click="userOpen = !userOpen" class="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition">
-                    <span class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</span>
+            <div class="hidden md:block relative ml-4" @click.away="userOpen = false">
+                <button @click="userOpen = !userOpen" class="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-100">
                     @if(auth()->user()->avatar)
-                        <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-600/10">
                     @else
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-md shadow-blue-500/20">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
                     @endif
-                    <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                    <div class="text-left hidden lg:block">
+                        <div class="text-sm font-bold text-gray-800 leading-none mb-0.5">{{ auth()->user()->name }}</div>
+                        <div class="text-[10px] text-gray-400 font-medium leading-none">{{ ucfirst(auth()->user()->role) }}</div>
+                    </div>
+                    <i class="fas fa-chevron-down text-[10px] text-gray-400 mr-1 transition-transform" :class="userOpen ? 'rotate-180' : ''"></i>
                 </button>
-                <div x-show="userOpen" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                    <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-th-large w-5 text-center text-gray-400 mr-2"></i>Dasbor</a>
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-user w-5 text-center text-gray-400 mr-2"></i>Profil</a>
-                    <a href="{{ route('wallet.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-wallet w-5 text-center text-gray-400 mr-2"></i>Dompet</a>
-                    <a href="{{ route('favorites.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-heart w-5 text-center text-gray-400 mr-2"></i>Favorit</a>
-                    <hr class="my-1 border-gray-100">
+                <div x-show="userOpen" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+                    <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-th-large w-5 text-center text-gray-400 mr-3"></i>Dasbor</a>
+                    <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-user w-5 text-center text-gray-400 mr-3"></i>Profil</a>
+                    <a href="{{ route('wallet.index') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-wallet w-5 text-center text-gray-400 mr-3"></i>Dompet</a>
+                    <a href="{{ route('favorites.index') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-heart w-5 text-center text-gray-400 mr-3"></i>Favorit</a>
+                    <hr class="my-2 border-gray-100">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 text-center mr-2"></i>Keluar</button>
+                        <button type="submit" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 text-center mr-3 text-red-500"></i>Keluar</button>
                     </form>
                 </div>
             </div>
             @endauth
 
-            <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                <i class="fas" :class="mobileOpen ? 'fa-times' : 'fa-bars'"></i>
+            <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2.5 rounded-2xl text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-100 transition">
+                <i class="fas text-lg" :class="mobileOpen ? 'fa-times' : 'fa-bars'"></i>
             </button>
         </div>
 
-        <div x-show="mobileOpen" x-transition class="md:hidden pb-4 border-t border-gray-100 mt-2 pt-4 space-y-2">
-            <form action="{{ route('services.index') }}" method="GET" class="mb-3">
-                <input type="text" name="q" placeholder="Cari layanan..." class="w-full px-4 py-2 bg-gray-100 rounded-lg text-sm border-0 focus:ring-2 focus:ring-blue-500">
+        <div x-show="mobileOpen" x-transition class="md:hidden pb-6 border-t border-gray-100 mt-2 pt-4 space-y-2">
+            <form action="{{ route('services.index') }}" method="GET" class="mb-4">
+                <input type="text" name="q" placeholder="Cari layanan..." class="w-full px-4 py-3 bg-gray-50 rounded-2xl text-sm border border-gray-200 focus:ring-2 focus:ring-blue-600">
             </form>
-            <a href="{{ route('services.index') }}" class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Jelajahi</a>
+            <a href="{{ route('services.index') }}" class="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50">Jelajahi</a>
             @auth
-                <a href="{{ $dashboardRoute }}" class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Dasbor</a>
-                <a href="{{ route('messages.index') }}" class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Pesan</a>
-                <form method="POST" action="{{ route('logout') }}">@csrf<button class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">Keluar</button></form>
+                <a href="{{ $dashboardRoute }}" class="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50">Dasbor</a>
+                <a href="{{ route('messages.index') }}" class="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50">Pesan</a>
+                <form method="POST" action="{{ route('logout') }}">@csrf<button class="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl">Keluar</button></form>
             @else
-                <a href="{{ route('login') }}" class="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Masuk</a>
-                <a href="{{ route('register') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-blue-600 hover:bg-blue-50">Daftar</a>
+                <a href="{{ route('login') }}" class="block px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50">Masuk</a>
+                <a href="{{ route('register') }}" class="block px-4 py-2.5 rounded-xl text-sm font-bold text-blue-600 hover:bg-blue-50">Daftar</a>
             @endauth
         </div>
     </div>
@@ -178,27 +182,30 @@
         </a>
     </div>
 
-    <aside class="w-64 shrink-0 {{ $isAdmin ? 'bg-slate-900 text-gray-300' : 'bg-white border-r border-gray-200 text-gray-700' }} flex flex-col fixed inset-y-0 left-0 z-50 transition-transform duration-300"
+    <aside class="w-64 shrink-0 bg-[#0b0f19] border-r border-white/[0.04] text-slate-300 flex flex-col fixed inset-y-0 left-0 z-50 transition-transform duration-300"
            :class="sideOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" id="sidebar">
-        <div class="p-5 {{ $isAdmin ? 'border-b border-slate-700' : 'border-b border-gray-100' }}">
-            <div class="flex items-start justify-between">
+        <div class="p-6 border-b border-white/[0.04]">
+            <div class="flex items-center justify-between">
                 @if($isAdmin)
                     <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center shrink-0"><i class="fas fa-shield-alt text-sm"></i></span>
-                        <span class="font-bold text-white text-lg">Panel Admin</span>
+                        <span class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/20"><i class="fas fa-shield-alt text-sm"></i></span>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-white text-base tracking-tight">ServeMix</span>
+                            <span class="text-[9px] font-bold text-violet-400 uppercase tracking-widest leading-none mt-0.5">Admin Console</span>
+                        </div>
                     </div>
                 @elseif($isProvider)
                     <div class="flex flex-col gap-2">
-                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-8 w-auto object-contain">
-                        <span class="text-[10px] font-bold text-blue-700 uppercase tracking-widest bg-blue-100/50 px-2 py-1 rounded-md inline-block w-max border border-blue-200">Dasbor Penyedia</span>
+                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
+                        <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 inline-block w-max">Provider Panel</span>
                     </div>
                 @else
                     <div class="flex flex-col gap-2">
-                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-8 w-auto object-contain">
-                        <span class="text-[10px] font-bold text-blue-700 uppercase tracking-widest bg-blue-100/50 px-2 py-1 rounded-md inline-block w-max border border-blue-200">Akun Saya</span>
+                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
+                        <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 inline-block w-max">Client Space</span>
                     </div>
                 @endif
-                <button type="button" @click="sideOpen = false" class="lg:hidden {{ $isAdmin ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600' }} w-8 h-8 flex items-center justify-center rounded-lg transition hover:bg-black/10">
+                <button type="button" @click="sideOpen = false" class="lg:hidden text-slate-400 hover:text-white w-9 h-9 flex items-center justify-center rounded-xl transition hover:bg-white/[0.04]">
                     <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
@@ -273,24 +280,19 @@
 
             @foreach($navGroups as $groupName => $links)
                 <div class="mb-6">
-                    <h3 class="px-3 text-[11px] font-bold {{ $isAdmin ? 'text-slate-500' : 'text-gray-400' }} uppercase tracking-wider mb-2">{{ $groupName }}</h3>
+                    <h3 class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5">{{ $groupName }}</h3>
                     <div class="space-y-1">
                         @foreach($links as $link)
                             @php
                                 $isActive = request()->routeIs($link['route'].'*') || request()->routeIs(str_replace('.index','',$link['route']).'.*');
-                                if($isAdmin) {
-                                    $linkClass = $isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white';
-                                    $iconClass = $isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300';
-                                } else {
-                                    $linkClass = $isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600';
-                                    $iconClass = $isActive ? 'text-white' : 'text-gray-400 group-hover:text-blue-600';
-                                }
+                                $linkClass = $isActive ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/10' : 'text-slate-400 hover:bg-white/[0.03] hover:text-white';
+                                $iconClass = $isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300';
                             @endphp
                             <a href="{{ isset($link['params']) ? route($link['route'], $link['params']) : route($link['route']) }}" @click="sideOpen = false"
-                               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ $linkClass }}">
-                                <i class="fas {{ $link['icon'] }} w-5 text-center {{ $iconClass }} transition"></i>{{ $link['label'] }}
+                               class="group flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 {{ $linkClass }}">
+                                <i class="fas {{ $link['icon'] }} w-5 text-center {{ $iconClass }} transition-colors"></i>{{ $link['label'] }}
                                 @if(!empty($link['badge']))
-                                    <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ $link['badge'] }}</span>
+                                    <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">{{ $link['badge'] }}</span>
                                 @endif
                             </a>
                         @endforeach
@@ -299,28 +301,28 @@
             @endforeach
         </nav>
 
-        <div class="p-4 {{ $isAdmin ? 'border-t border-slate-800' : 'border-t border-gray-100' }} space-y-3">
-            <a href="{{ route('home') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-sm {{ $isAdmin ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }} transition">
-                <span class="flex items-center gap-2"><i class="fas fa-home text-xs"></i> Kembali ke Beranda</span>
+        <div class="p-4 border-t border-white/[0.04] space-y-4">
+            <a href="{{ route('home') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/[0.03] transition-colors font-medium">
+                <span class="flex items-center gap-2"><i class="fas fa-home text-xs text-slate-500"></i> Kembali ke Beranda</span>
             </a>
             
-            <div class="flex items-center justify-between gap-3 px-3">
+            <div class="flex items-center justify-between gap-3 px-2.5">
                 <div class="flex items-center gap-3 min-w-0">
                     @if(auth()->user()->avatar)
-                        <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover shrink-0">
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/5">
                     @else
-                        <div class="w-9 h-9 rounded-full {{ $isAdmin ? 'bg-slate-700 text-gray-300' : 'bg-blue-100 text-blue-600' }} flex items-center justify-center text-sm font-semibold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-sm font-bold shadow-inner">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
                     @endif
                     <div class="min-w-0">
-                        <div class="text-sm font-medium truncate {{ $isAdmin ? 'text-white' : 'text-gray-800' }}">{{ auth()->user()->name }}</div>
-                        <div class="text-[11px] truncate {{ $isAdmin ? 'text-slate-500' : 'text-gray-400' }}">{{ auth()->user()->email }}</div>
+                        <div class="text-sm font-bold text-white truncate leading-none mb-1">{{ auth()->user()->name }}</div>
+                        <div class="text-[10px] text-slate-500 truncate leading-none">{{ auth()->user()->email }}</div>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                     @csrf
-                    <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center transition {{ $isAdmin ? 'text-slate-400 hover:text-red-400 hover:bg-slate-800' : 'text-gray-400 hover:text-red-500 hover:bg-red-50' }}" title="Keluar">
+                    <button type="submit" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-white/[0.04] transition" title="Keluar">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </form>
@@ -328,41 +330,47 @@
         </div>
     </aside>
 
-    <main class="flex-1 lg:ml-64 bg-gray-50 min-h-screen flex flex-col">
+    <main class="flex-1 lg:ml-64 bg-gray-50/50 min-h-screen flex flex-col">
         {{-- Desktop Top Bar (Dashboard) --}}
-        <header class="hidden lg:flex items-center justify-end h-16 px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40">
-            <div class="flex items-center gap-4">
+        <header class="hidden lg:flex items-center justify-end h-20 px-8 bg-white/75 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40 transition-all duration-300">
+            <div class="flex items-center gap-5">
+                {{-- Messages --}}
+                <a href="{{ route('messages.index') }}" class="relative p-2.5 text-gray-500 hover:text-blue-600 transition rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100" title="Pesan">
+                    <i class="fas fa-comment-dots text-lg"></i>
+                    <span data-unread-badge="messages" class="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[9px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center border-2 border-white {{ $unreadMessages > 0 ? '' : 'hidden' }}">{{ $unreadMessages }}</span>
+                </a>
+
                 {{-- Notifications Bell --}}
-                <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-500 hover:text-blue-600 transition rounded-full hover:bg-gray-100">
+                <a href="{{ route('notifications.index') }}" class="relative p-2.5 text-gray-500 hover:text-blue-600 transition rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100" title="Notifikasi">
                     <i class="fas fa-bell text-lg"></i>
                     <span data-unread-badge="notifications" class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center border-2 border-white {{ $unreadNotifs > 0 ? '' : 'hidden' }}">{{ $unreadNotifs }}</span>
                 </a>
                 
-                <div class="h-6 w-px bg-gray-200 mx-2"></div>
+                <div class="h-6 w-px bg-gray-200/80 mx-2"></div>
                 
                 {{-- Profile Dropdown --}}
                 <div class="relative" x-data="{ dashUserOpen: false }" @click.away="dashUserOpen = false">
-                    <button @click="dashUserOpen = !dashUserOpen" class="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition focus:outline-none">
+                    <button @click="dashUserOpen = !dashUserOpen" class="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-gray-50 transition border border-transparent hover:border-gray-100 focus:outline-none">
                         @if(auth()->user()->avatar)
-                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-600/10">
                         @else
-                            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow-md shadow-blue-500/20">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
                         @endif
-                        <span class="text-sm font-medium text-gray-700 hidden sm:block">{{ auth()->user()->name }}</span>
-                        <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                        <span class="text-sm font-bold text-gray-800 hidden sm:block">{{ auth()->user()->name }}</span>
+                        <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="dashUserOpen ? 'rotate-180' : ''"></i>
                     </button>
                     
-                    <div x-show="dashUserOpen" x-transition x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-th-large w-5 text-center text-gray-400 mr-2"></i>Dasbor</a>
-                        <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-user w-5 text-center text-gray-400 mr-2"></i>Profil</a>
-                        <a href="{{ route('wallet.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-wallet w-5 text-center text-gray-400 mr-2"></i>Dompet</a>
-                        <a href="{{ route('favorites.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><i class="fas fa-heart w-5 text-center text-gray-400 mr-2"></i>Favorit</a>
-                        <hr class="my-1 border-gray-100">
+                    <div x-show="dashUserOpen" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" x-cloak class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+                        <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-th-large w-5 text-center text-gray-400 mr-3"></i>Dasbor</a>
+                        <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-user w-5 text-center text-gray-400 mr-3"></i>Profil</a>
+                        <a href="{{ route('wallet.index') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-wallet w-5 text-center text-gray-400 mr-3"></i>Dompet</a>
+                        <a href="{{ route('favorites.index') }}" class="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"><i class="fas fa-heart w-5 text-center text-gray-400 mr-3"></i>Favorit</a>
+                        <hr class="my-2 border-gray-100">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 text-center mr-2"></i>Keluar</button>
+                            <button type="submit" class="w-full flex items-center px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 text-center mr-3 text-red-500"></i>Keluar</button>
                         </form>
                     </div>
                 </div>
@@ -487,8 +495,19 @@
     });
     document.addEventListener('ui:sync-unread-counts', () => syncUnreadCounts(true));
 
-    // Faster polling: 5 seconds instead of 15
-    setInterval(() => syncUnreadCounts(false), 5000);
+    // Listen to real-time notifications if Echo is available, otherwise fallback to polling
+    setTimeout(() => {
+        if (window.Echo) {
+            window.Echo.private('App.Models.User.' + {{ auth()->id() }})
+                .listen('NotificationSent', (e) => {
+                    syncUnreadCounts(true);
+                });
+        } else {
+            // Faster polling: 5 seconds instead of 15
+            setInterval(() => syncUnreadCounts(false), 5000);
+        }
+    }, 1000);
+
     syncUnreadCounts(true);
 })();
 
@@ -521,6 +540,89 @@ function toggleFavorite(serviceId, btn) {
 </script>
 @endauth
 
+<!-- Global SweetAlert2 Interceptor for confirm() -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Intercept forms with inline onsubmit
+    document.querySelectorAll('form').forEach(form => {
+        const onsubmitAttr = form.getAttribute('onsubmit');
+        if (onsubmitAttr && onsubmitAttr.includes('return confirm')) {
+            const match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
+            const msg = match ? match[1] : 'Apakah Anda yakin?';
+            
+            form.removeAttribute('onsubmit');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: msg,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Lanjutkan',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-[1.5rem] shadow-2xl font-sans border border-gray-100',
+                        confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-all mr-3',
+                        cancelButton: 'bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-6 rounded-xl transition-all'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        }
+    });
+
+    // 2. Intercept buttons or links with inline onclick
+    document.querySelectorAll('[onclick*="return confirm"]').forEach(el => {
+        const onclickAttr = el.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes('return confirm')) {
+            const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+            const msg = match ? match[1] : 'Apakah Anda yakin?';
+            
+            el.removeAttribute('onclick');
+            
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: msg,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Lanjutkan',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-[1.5rem] shadow-2xl font-sans border border-gray-100',
+                        confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-all mr-3',
+                        cancelButton: 'bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-6 rounded-xl transition-all'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (el.tagName === 'BUTTON' && el.type === 'submit' && el.form) {
+                            if (el.name) {
+                                const hidden = document.createElement('input');
+                                hidden.type = 'hidden';
+                                hidden.name = el.name;
+                                hidden.value = el.value || '1';
+                                el.form.appendChild(hidden);
+                            }
+                            el.form.submit();
+                        } else if (el.tagName === 'A' && el.href) {
+                            window.location.href = el.href;
+                        } else if (el.tagName === 'BUTTON' && !el.form) {
+                             // Do nothing if it's not a submit button.
+                        }
+                    }
+                });
+            });
+        }
+    });
+});
+</script>
 @stack('scripts')
 </body>
 </html>

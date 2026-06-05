@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $provider->name . ' - Provider Profile')
+@section('title', $provider->name . ' - Profil Provider')
 
 @section('meta_title', $provider->name . ' - ServeMix Provider')
 @section('meta_description', Str::limit($provider->profile?->bio ?? 'Checkout my provider profile and services on ServeMix.', 150))
@@ -14,15 +14,17 @@
 
 
     {{-- Provider Header --}}
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 md:p-8 mb-8 text-white">
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-6 md:p-8 mb-8 text-white relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-40 h-40 bg-white/[0.06] rounded-full"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white/[0.04] rounded-full"></div>
+        <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-6 pt-4 sm:pt-0">
             {{-- Avatar --}}
             <div class="shrink-0">
                 @if($provider->avatar)
                     <img src="{{ Storage::url($provider->avatar) }}" alt="{{ $provider->name }}"
                          class="w-24 h-24 rounded-full object-cover border-4 border-white/30">
                 @else
-                    <div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold border-4 border-white/30">
+                    <div class="w-24 h-24 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-bold border-4 border-white/30 shadow-lg">
                         {{ strtoupper(substr($provider->name, 0, 1)) }}
                     </div>
                 @endif
@@ -30,7 +32,12 @@
 
             {{-- Info --}}
             <div class="flex-1 text-center sm:text-left">
-                <h1 class="text-2xl md:text-3xl font-bold mb-1">{{ $provider->name }}</h1>
+                <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">{{ $provider->name }}</h1>
+                    @if(optional($provider->profile)->is_verified_provider)
+                        <i class="fas fa-check-circle text-blue-400 text-xl" title="Verified Provider"></i>
+                    @endif
+                </div>
                 <p class="text-blue-100 text-sm mb-3">{{ '@' . $provider->username }}</p>
 
                 @if($provider->profile?->bio)
@@ -65,7 +72,7 @@
                         <form action="{{ route('messages.start') }}" method="POST">
                             @csrf
                             <input type="hidden" name="provider_id" value="{{ $provider->id }}">
-                            <button type="submit" class="bg-white text-blue-600 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-50 transition">
+                            <button type="submit" class="bg-white text-blue-600 px-5 py-2.5 rounded-2xl font-bold text-sm hover:bg-blue-50 transition shadow-sm hover:shadow-lg">
                                 <i class="fas fa-envelope mr-1.5"></i> Hubungi
                             </button>
                         </form>
@@ -77,23 +84,23 @@
 
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-gray-900">{{ $stats['total_services'] }}</div>
+        <div class="bg-white rounded-2xl p-4 text-center border border-gray-100/80 shadow-sm">
+            <div class="text-2xl font-extrabold text-gray-900">{{ $stats['total_services'] }}</div>
             <div class="text-xs text-gray-500 mt-1">Layanan Aktif</div>
         </div>
-        <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-gray-900">{{ $stats['total_orders'] }}</div>
+        <div class="bg-white rounded-2xl p-4 text-center border border-gray-100/80 shadow-sm">
+            <div class="text-2xl font-extrabold text-gray-900">{{ $stats['total_orders'] }}</div>
             <div class="text-xs text-gray-500 mt-1">Order Selesai</div>
         </div>
-        <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-yellow-600">
+        <div class="bg-white rounded-2xl p-4 text-center border border-gray-100/80 shadow-sm">
+            <div class="text-2xl font-extrabold text-yellow-600">
                 <i class="fas fa-star text-yellow-400 text-lg"></i>
                 {{ number_format($stats['avg_rating'], 1) }}
             </div>
             <div class="text-xs text-gray-500 mt-1">Rating Rata-rata</div>
         </div>
-        <div class="bg-gray-50 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-gray-900">{{ $stats['total_reviews'] }}</div>
+        <div class="bg-white rounded-2xl p-4 text-center border border-gray-100/80 shadow-sm">
+            <div class="text-2xl font-extrabold text-gray-900">{{ $stats['total_reviews'] }}</div>
             <div class="text-xs text-gray-500 mt-1">Total Review</div>
         </div>
     </div>
@@ -128,6 +135,35 @@
     </div>
     @endif
 
+    {{-- Portfolios --}}
+    @if($provider->portfolios && $provider->portfolios->count())
+    <div class="mb-10">
+        <h2 class="text-xl font-bold text-gray-900 mb-5">
+            <i class="fas fa-images text-blue-500 mr-2"></i>Portofolio & Hasil Karya
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            @foreach($provider->portfolios as $portfolio)
+                <div class="group relative rounded-2xl overflow-hidden bg-gray-100 aspect-square cursor-pointer shadow-sm border border-gray-100">
+                    @if($portfolio->media_type === 'image')
+                        <img src="{{ filter_var($portfolio->media_path, FILTER_VALIDATE_URL) ? $portfolio->media_path : Storage::url($portfolio->media_path) }}" alt="{{ $portfolio->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    @else
+                        <video src="{{ filter_var($portfolio->media_path, FILTER_VALIDATE_URL) ? $portfolio->media_path : Storage::url($portfolio->media_path) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition">
+                            <i class="fas fa-play-circle text-white text-3xl opacity-80"></i>
+                        </div>
+                    @endif
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                        <h4 class="text-white font-bold text-sm truncate">{{ $portfolio->title }}</h4>
+                        @if($portfolio->description)
+                            <p class="text-gray-300 text-xs mt-1 line-clamp-2">{{ $portfolio->description }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Services --}}
     <div class="mb-10">
         <h2 class="text-xl font-bold text-gray-900 mb-5">
@@ -137,11 +173,11 @@
         @if($services->count())
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($services as $service)
-                <div class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl hover:border-blue-100 transition-all duration-300">
+                <div class="group bg-white border border-gray-100/80 rounded-3xl overflow-hidden hover:shadow-xl hover:border-blue-100 transition-all duration-300 shadow-sm">
                     <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                         @php $cover = $service->coverImage ?? $service->images->first(); @endphp
                         @if($cover)
-                            <img src="{{ Storage::url($cover->image_path) }}" alt="{{ $service->title }}"
+                            <img src="{{ filter_var($cover->image_path, FILTER_VALIDATE_URL) ? $cover->image_path : Storage::url($cover->image_path) }}" alt="{{ $service->title }}"
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         @else
                             <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
@@ -191,7 +227,7 @@
         @if($reviews->count())
             <div class="space-y-4">
                 @foreach($reviews as $review)
-                <div class="bg-gray-50 rounded-xl p-5">
+                <div class="bg-white rounded-2xl p-5 border border-gray-100/80 shadow-sm">
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-semibold shrink-0">
                             {{ strtoupper(substr($review->customer->name, 0, 1)) }}

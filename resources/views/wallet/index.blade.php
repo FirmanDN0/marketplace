@@ -1,15 +1,20 @@
 @extends('layouts.app')
-@section('title', 'My Wallet')
+@section('title', 'Dompet Saya')
 @section('content')
 <div class="max-w-5xl mx-auto">
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">My Wallet</h1>
-            <p class="text-gray-500 text-sm mt-1">Manage your balance and transactions</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                <i class="fas fa-wallet text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Dompet Saya</h1>
+                <p class="text-gray-500 text-sm font-medium mt-0.5">Kelola saldo dan riwayat transaksi</p>
+            </div>
         </div>
-        <a href="{{ route('wallet.topup.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition inline-flex items-center gap-2 self-start sm:self-auto">
-            <i class="fas fa-plus"></i> Top Up
+        <a href="{{ route('wallet.topup.create') }}" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center gap-2 self-start sm:self-auto shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+            <i class="fas fa-plus"></i> Isi Saldo
         </a>
     </div>
 
@@ -19,33 +24,39 @@
 
     {{-- Balance Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
-            <div class="text-blue-200 text-sm font-medium mb-1">Available Balance</div>
-            <div class="text-2xl sm:text-3xl font-bold mb-4">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('wallet.topup.create') }}" class="bg-white/20 hover:bg-white/30 backdrop-blur text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                    <i class="fas fa-plus mr-1"></i> Top Up
-                </a>
-                <a href="{{ route('wallet.withdraw.create') }}" class="bg-white/20 hover:bg-white/30 backdrop-blur text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                    <i class="fas fa-university mr-1"></i> Withdraw
-                </a>
+        <div class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-6 text-white shadow-xl shadow-blue-600/15 relative overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/[0.06] rounded-full"></div>
+                <div class="absolute -bottom-8 -left-8 w-28 h-28 bg-white/[0.04] rounded-full"></div>
+            </div>
+            <div class="relative">
+                <div class="text-blue-200/60 text-sm font-semibold mb-1">Saldo Tersedia</div>
+                <div class="text-2xl sm:text-3xl font-extrabold mb-4 tracking-tight">Rp {{ number_format($profile->balance, 0, ',', '.') }}</div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('wallet.topup.create') }}" class="bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                        <i class="fas fa-plus mr-1"></i> Isi Saldo
+                    </a>
+                    <a href="{{ route('wallet.withdraw.create') }}" class="bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                        <i class="fas fa-university mr-1"></i> Tarik Dana
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div class="text-gray-500 text-sm font-medium mb-1">Total Top-Up (all time)</div>
-            <div class="text-2xl font-bold text-gray-900 mb-1">
+        <div class="bg-white rounded-3xl p-6 border border-gray-100/80 shadow-sm">
+            <div class="text-gray-500 text-sm font-semibold mb-1">Total Top-Up (Sepanjang Waktu)</div>
+            <div class="text-2xl font-extrabold text-gray-900 mb-1">
                 Rp {{ number_format($topUps->where('status','success')->sum('amount'), 0, ',', '.') }}
             </div>
-            <div class="text-sm text-gray-400">{{ $topUps->where('status','success')->count() }} successful top-up(s)</div>
+            <div class="text-sm text-gray-400 font-medium">{{ $topUps->where('status','success')->count() }} top-up berhasil</div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
         {{-- Top-Up History --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-900">Top-Up History</h3>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/80">
+                <h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-arrow-circle-up text-emerald-500 text-sm"></i>Riwayat Top-Up</h3>
                 <div class="flex items-center gap-3">
                     <a href="{{ route('wallet.topup.history') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View all</a>
                     <a href="{{ route('wallet.topup.create') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">+ New</a>
@@ -76,9 +87,9 @@
         </div>
 
         {{-- Transaction History --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-900">Transaction History</h3>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100/80">
+                <h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-exchange-alt text-blue-500 text-sm"></i>Riwayat Transaksi</h3>
             </div>
             <div class="divide-y divide-gray-50">
                 @forelse($transactions as $tx)
@@ -100,9 +111,9 @@
 
     {{-- Withdrawal History --}}
     @if($withdrawals->count() > 0)
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 class="font-semibold text-gray-900">Withdrawal Requests</h3>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100/80 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/80">
+            <h3 class="font-extrabold text-gray-900 flex items-center gap-2"><i class="fas fa-money-bill-wave text-amber-500 text-sm"></i>Riwayat Penarikan</h3>
             <a href="{{ route('wallet.withdraw.create') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">+ New</a>
         </div>
         {{-- Mobile Card View --}}
