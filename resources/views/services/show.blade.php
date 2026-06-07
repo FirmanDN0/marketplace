@@ -9,6 +9,40 @@
 @if($ogImage)
     @section('meta_image', url(Storage::url($ogImage->image_path)))
 @endif
+@section('meta_type', 'product')
+
+@push('scripts')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org/",
+  "@@type": "Product",
+  "name": "{{ $service->title }}",
+  "image": [
+    "{{ $ogImage ? url(Storage::url($ogImage->image_path)) : asset('images/logo.webp') }}"
+  ],
+  "description": "{{ strip_tags($service->description) }}",
+  "brand": {
+    "@@type": "Brand",
+    "name": "ServeMix"
+  },
+  "offers": {
+    "@@type": "AggregateOffer",
+    "url": "{{ url()->current() }}",
+    "priceCurrency": "IDR",
+    "lowPrice": "{{ $service->packages->min('price') ?? 0 }}",
+    "highPrice": "{{ $service->packages->max('price') ?? 0 }}",
+    "offerCount": "{{ $service->packages->count() }}"
+  }
+  @if($service->total_reviews > 0)
+  ,"aggregateRating": {
+    "@@type": "AggregateRating",
+    "ratingValue": "{{ number_format($service->avg_rating, 1) }}",
+    "reviewCount": "{{ $service->total_reviews }}"
+  }
+  @endif
+}
+</script>
+@endpush
 
 @section('content')
 
@@ -160,7 +194,7 @@
                                 @foreach($service->packages as $pkg)
                                     <td class="py-4 px-4 text-center">
                                         @auth
-                                            @if(auth()->user()->isCustomer())
+                                            @if(auth()->user()->id !== $service->provider_id && !auth()->user()->isAdmin())
                                                 <form method="GET" action="{{ route('customer.orders.create') }}">
                                                     <input type="hidden" name="package_id" value="{{ $pkg->id }}">
                                                     <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all text-xs shadow-md shadow-blue-500/20 hover:-translate-y-0.5">Pilih</button>
@@ -205,7 +239,7 @@
                     {{ $service->provider->profile->bio ?? 'Penyedia jasa berpengalaman yang berkomitmen menghadirkan kualitas terbaik.' }}
                 </p>
                 @auth
-                    @if(auth()->user()->isCustomer())
+                    @if(auth()->user()->id !== $service->provider_id && !auth()->user()->isAdmin())
                     <form method="POST" action="{{ route('messages.start') }}">
                         @csrf
                         <input type="hidden" name="provider_id" value="{{ $service->provider_id }}">
@@ -295,7 +329,7 @@
                             @endif
                         </div>
                         @auth
-                            @if(auth()->user()->isCustomer())
+                            @if(auth()->user()->id !== $service->provider_id && !auth()->user()->isAdmin())
                                 <form method="GET" action="{{ route('customer.orders.create') }}">
                                     <input type="hidden" name="package_id" value="{{ $pkg->id }}">
                                     <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 active:translate-y-0">Lanjutkan Pemesanan</button>
@@ -305,7 +339,7 @@
                             <a href="{{ route('login') }}" class="block w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl text-center transition-all duration-300 shadow-lg shadow-blue-500/20">Masuk untuk Memesan</a>
                         @endauth
                         @auth
-                            @if(auth()->user()->isCustomer())
+                            @if(auth()->user()->id !== $service->provider_id && !auth()->user()->isAdmin())
                             <form method="POST" action="{{ route('messages.start') }}" class="mt-3">
                                 @csrf
                                 <input type="hidden" name="provider_id" value="{{ $service->provider_id }}">

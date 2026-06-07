@@ -6,15 +6,16 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name', 'username', 'email', 'password',
         'role', 'status', 'avatar', 'email_verified_at',
-        'provider_setup_step',
+        'provider_setup_step', 'google_id', 'google_token', 'google_refresh_token'
     ];
 
     protected $hidden = ['password', 'remember_token'];

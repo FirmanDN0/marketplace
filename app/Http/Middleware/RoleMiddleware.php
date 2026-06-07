@@ -18,7 +18,15 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if (!in_array($request->user()->role, $roles, true)) {
+        $userRole = $request->user()->role;
+        $allowedRoles = $roles;
+
+        // Allow providers to access customer routes
+        if (in_array('customer', $allowedRoles, true) && !in_array('provider', $allowedRoles, true)) {
+            $allowedRoles[] = 'provider';
+        }
+
+        if (!in_array($userRole, $allowedRoles, true)) {
             abort(403, 'Unauthorized.');
         }
 

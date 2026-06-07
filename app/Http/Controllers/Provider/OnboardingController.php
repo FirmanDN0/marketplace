@@ -39,12 +39,27 @@ class OnboardingController extends Controller
             default => null,
         };
 
+        $wasLessThanThree = $user->provider_setup_step < 3;
+
         // Advance step if needed
         if ($user->provider_setup_step < $step) {
             $user->update(['provider_setup_step' => $step]);
         }
 
         if ($step >= self::TOTAL_STEPS) {
+            if ($wasLessThanThree && $user->role === 'customer') {
+                $admins = \App\Models\User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    \App\Services\NotificationService::send(
+                        $admin->id,
+                        'info',
+                        'Aplikasi Provider Baru',
+                        "Pengguna {$user->name} mengajukan diri menjadi Provider.",
+                        [],
+                        route('admin.users.index') . '?role=customer'
+                    );
+                }
+            }
             return redirect()->route('provider.onboarding.complete');
         }
 

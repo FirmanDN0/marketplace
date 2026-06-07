@@ -60,7 +60,6 @@ class AuthController extends Controller
             'username'             => 'required|string|max:50|unique:users|alpha_dash',
             'email'                => 'required|email|unique:users',
             'password'             => ['required', 'confirmed', Password::min(8)],
-            'role'                 => 'required|in:customer,provider',
             'g-recaptcha-response' => 'required',
         ], [
             'g-recaptcha-response.required' => 'Harap centang verifikasi reCAPTCHA.',
@@ -84,7 +83,7 @@ class AuthController extends Controller
             'username' => $data['username'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'role'     => $data['role'],
+            'role'     => 'customer',
             'status'   => 'active',
         ]);
 

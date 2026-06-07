@@ -4,19 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'ServeMix') - Marketplace</title>
+    <title>@yield('title', 'Beranda') - ServeMix</title>
     
     {{-- SEO & Meta Tags --}}
-    <meta name="description" content="@yield('meta_description', 'ServeMix is the ultimate freelance marketplace to find professional services for your business.')">
-    <meta property="og:title" content="@yield('meta_title', 'ServeMix - Find Professional Services')">
-    <meta property="og:description" content="@yield('meta_description', 'ServeMix is the ultimate freelance marketplace to find professional services for your business.')">
+    <meta name="description" content="@yield('meta_description', 'ServeMix adalah marketplace freelance terpercaya untuk menemukan layanan profesional, kreatif, dan digital terbaik bagi kebutuhan bisnis Anda.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'freelance, marketplace, jasa profesional, desain grafis, web development, copywriting, ServeMix')">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow')">
+    <link rel="canonical" href="@yield('canonical_url', url()->current())">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="@yield('meta_title', 'ServeMix - Temukan Layanan Profesional Terbaik')">
+    <meta property="og:description" content="@yield('meta_description', 'ServeMix adalah marketplace freelance terpercaya untuk menemukan layanan profesional, kreatif, dan digital terbaik bagi kebutuhan bisnis Anda.')">
     <meta property="og:type" content="@yield('meta_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="@yield('meta_image', asset('images/og-default.jpg'))">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="@yield('meta_image', asset('images/logo.webp'))">
+    <meta property="og:site_name" content="ServeMix">
 
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}?v=5">
-    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}?v=5">
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('meta_title', 'ServeMix - Temukan Layanan Profesional Terbaik')">
+    <meta name="twitter:description" content="@yield('meta_description', 'ServeMix adalah marketplace freelance terpercaya untuk menemukan layanan profesional, kreatif, dan digital terbaik bagi kebutuhan bisnis Anda.')">
+    <meta name="twitter:image" content="@yield('meta_image', asset('images/logo.webp'))">
+
+    <link rel="icon" type="image/webp" href="{{ asset('images/logo.webp') }}?v=6">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.webp') }}?v=6">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +63,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
             <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0 group transition-transform duration-300 active:scale-95">
-                <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
+                <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
             </a>
 
             <div class="hidden md:flex flex-1 max-w-md mx-8">
@@ -196,12 +207,12 @@
                     </div>
                 @elseif($isProvider)
                     <div class="flex flex-col gap-2">
-                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
+                        <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
                         <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 inline-block w-max">Provider Panel</span>
                     </div>
                 @else
                     <div class="flex flex-col gap-2">
-                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
+                        <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-9 w-auto object-contain brightness-0 invert">
                         <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 inline-block w-max">Client Space</span>
                     </div>
                 @endif
@@ -377,7 +388,7 @@
             </div>
         </header>
 
-        <div class="p-4 pt-[4.5rem] sm:p-6 sm:pt-[5rem] lg:p-8 lg:pt-6">
+        <div class="p-4 pt-[4.5rem] sm:p-6 sm:pt-[5rem] lg:px-10 xl:px-12 2xl:px-16 lg:py-8 max-w-7xl mx-auto w-full">
             @yield('content')
         </div>
     </main>

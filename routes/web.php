@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\HomeController;
@@ -43,6 +44,7 @@ use App\Http\Controllers\Api\RealtimeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/services/api/suggestions', [ServiceController::class, 'suggestions'])->name('services.suggestions');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
 Route::get('/terms', [PageController::class, 'terms'])->name('pages.terms');
@@ -61,6 +63,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email')->middleware('throttle:3,1');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update')->middleware('throttle:5,1');
+
+    // Socialite Google
+    Route::get('/auth/google', [SocialiteController::class, 'redirectToGoogle'])->name('auth.google');
+    Route::get('/auth/google/callback', [SocialiteController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -183,6 +189,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:admi
     Route::put('/users/{user}', [AdminUser::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [AdminUser::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{user}/status', [AdminUser::class, 'updateStatus'])->name('users.status');
+    Route::post('/users/{user}/approve-provider', [AdminUser::class, 'approveProvider'])->name('users.approve_provider');
 
     // Categories
     Route::get('/categories', [AdminCategory::class, 'index'])->name('categories.index');
@@ -239,7 +246,7 @@ Route::prefix('ai-copilot')->name('ai.')->middleware(['auth', 'active', 'verifie
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 // Onboarding routes (no onboarding middleware — these ARE the onboarding)
-Route::prefix('provider/onboarding')->name('provider.onboarding.')->middleware(['auth', 'verified', 'role:provider'])->group(function () {
+Route::prefix('provider/onboarding')->name('provider.onboarding.')->middleware(['auth', 'verified', 'role:provider,customer'])->group(function () {
     Route::get('/step/{step}', [ProviderOnboarding::class, 'show'])->name('show');
     Route::post('/step/{step}', [ProviderOnboarding::class, 'save'])->name('save');
     Route::get('/complete', [ProviderOnboarding::class, 'complete'])->name('complete');
@@ -279,6 +286,7 @@ Route::prefix('provider')->name('provider.')->middleware(['auth', 'active', 'ver
 
 Route::prefix('customer')->name('customer.')->middleware(['auth', 'active', 'verified', 'role:customer'])->group(function () {
     Route::get('/', [CustomerDashboard::class, 'index'])->name('dashboard');
+    Route::post('/upgrade-to-provider', [CustomerDashboard::class, 'upgradeToProvider'])->name('upgrade-to-provider');
 
     // Orders
     Route::get('/orders', [CustomerOrder::class, 'index'])->name('orders.index');

@@ -61,13 +61,24 @@
             </div>
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-600">{{ ucfirst($user->role) }}</span>
+                    <span class="text-xs text-gray-600">
+                        {{ ucfirst($user->role) }}
+                        @if($user->role === 'customer' && $user->provider_setup_step >= 3)
+                            <span class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[9px] font-bold uppercase tracking-wider">Pending</span>
+                        @endif
+                    </span>
                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : ($user->status === 'suspended' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
                         {{ ucfirst($user->status) }}
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('admin.users.edit', $user->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition"><i class="fas fa-pen text-xs"></i></a>
+                    @if($user->role === 'customer' && $user->provider_setup_step >= 3)
+                    <form method="POST" action="{{ route('admin.users.approve_provider', $user->id) }}" onsubmit="return confirm('Setujui aplikasi Provider ini?')" class="ml-1">
+                        @csrf
+                        <button type="submit" class="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1" title="Approve Provider"><i class="fas fa-check-circle"></i> ACC</button>
+                    </form>
+                    @endif
                     @if($user->id !== auth()->id())
                     <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" onsubmit="return confirm('Delete this user permanently?')">
                         @csrf @method('DELETE')
@@ -112,7 +123,12 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600">{{ ucfirst($user->role) }}</td>
+                    <td class="px-4 lg:px-6 py-4 text-sm text-gray-600">
+                        {{ ucfirst($user->role) }}
+                        @if($user->role === 'customer' && $user->provider_setup_step >= 3)
+                            <span class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[10px] font-bold uppercase tracking-wider">Pending Provider</span>
+                        @endif
+                    </td>
                     <td class="px-4 lg:px-6 py-4">
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $user->status === 'active' ? 'bg-green-100 text-green-700' : ($user->status === 'suspended' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
                             {{ ucfirst($user->status) }}
@@ -124,6 +140,14 @@
                             <a href="{{ route('admin.users.edit', $user->id) }}" class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition" title="Edit">
                                 <i class="fas fa-pen text-xs"></i>
                             </a>
+                            @if($user->role === 'customer' && $user->provider_setup_step >= 3)
+                            <form method="POST" action="{{ route('admin.users.approve_provider', $user->id) }}" onsubmit="return confirm('Setujui aplikasi Provider ini?')" class="mr-1">
+                                @csrf
+                                <button type="submit" class="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 rounded-xl font-bold text-[11px] uppercase tracking-wider transition shadow-sm hover:shadow-md whitespace-nowrap flex items-center gap-1.5" title="Approve Provider">
+                                    <i class="fas fa-check-circle"></i> Setujui
+                                </button>
+                            </form>
+                            @endif
                             @if($user->id !== auth()->id())
                             <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" onsubmit="return confirm('Delete this user permanently?')">
                                 @csrf @method('DELETE')

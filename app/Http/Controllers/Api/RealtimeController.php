@@ -30,10 +30,21 @@ class RealtimeController extends Controller
         $afterId = (int) $request->query('after', 0);
 
         // Mark incoming messages as read
-        $conversation->messages()
+        $unreadCount = $conversation->messages()
             ->where('sender_id', '!=', $user->id)
             ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            ->count();
+
+        if ($unreadCount > 0) {
+            $conversation->messages()
+                ->where('sender_id', '!=', $user->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+            
+            try {
+                broadcast(new \App\Events\MessageRead($conversation->id))->toOthers();
+            } catch (\Throwable $e) {}
+        }
 
         $newMessages = $conversation->messages()
             ->with(['sender', 'customOffer', 'replyTo.sender'])

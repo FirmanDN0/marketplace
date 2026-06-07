@@ -18,7 +18,7 @@
     <div class="relative w-full max-w-md z-10">
         <div class="text-center mb-8 anim-fade-in-down">
             <a href="{{ route('home') }}" class="inline-flex justify-center mb-6 group">
-                <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-12 w-auto object-contain brightness-0 invert transition-transform duration-300 group-hover:scale-105">
+                <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-12 w-auto object-contain brightness-0 invert transition-transform duration-300 group-hover:scale-105">
             </a>
         </div>
 

@@ -108,7 +108,16 @@
                                     </div>
                                 </div>
                             @endif
-                            <div class="text-xs {{ $mine ? 'text-blue-200' : 'text-gray-400' }} mt-1 text-right">{{ $msg->created_at->format('d M H:i') }}</div>
+                            <div class="text-[10px] {{ $mine ? 'text-blue-200' : 'text-gray-400' }} mt-1 text-right flex items-center justify-end gap-1">
+                                <span>{{ $msg->created_at->format('d M H:i') }}</span>
+                                @if($mine)
+                                    @if($msg->read_at)
+                                        <i class="fas fa-check-double text-blue-300" title="Dibaca pada {{ $msg->read_at->format('H:i') }}"></i>
+                                    @else
+                                        <i class="fas fa-check text-blue-200/50" title="Terkirim"></i>
+                                    @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -427,6 +436,15 @@
             : 'bg-gray-100 text-gray-800 rounded-2xl rounded-tl-md';
         const timeClass = msg.mine ? 'text-blue-200' : 'text-gray-400';
 
+        let readStatusHtml = '';
+        if (msg.mine) {
+            if (msg.read_at) {
+                readStatusHtml = '<i class="fas fa-check-double text-blue-300" title="Dibaca"></i>';
+            } else {
+                readStatusHtml = '<i class="fas fa-check text-blue-200/50" title="Terkirim"></i>';
+            }
+        }
+
         wrapper.innerHTML = `
             <div class="max-w-[75%]">
                 ${!msg.mine ? `<div class="text-xs text-gray-400 mb-1 ml-1">${msg.sender_name}</div>` : ''}
@@ -440,7 +458,10 @@
                     <div class="msg-text text-sm whitespace-pre-wrap break-words">${escapeHtml(msg.message_text || '')}</div>
                     ${attachmentHtml}
                     ${customOfferHtml}
-                    <div class="text-xs ${timeClass} mt-1 text-right">${msg.time}</div>
+                    <div class="text-[10px] ${timeClass} mt-1 text-right flex items-center justify-end gap-1">
+                        <span>${msg.time}</span>
+                        ${readStatusHtml}
+                    </div>
                 </div>
             </div>`;
 
@@ -494,6 +515,14 @@
                 lastId = data.last_id;
                 // Trigger badge sync
                 if (window.syncUiUnreadCounts) window.syncUiUnreadCounts(true);
+                
+                // If we received a message from the other person, they have likely read our messages
+                // Let's optimistically update all our sent single checks to double checks!
+                document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
+                    icon.classList.remove('fa-check', 'text-blue-200/50');
+                    icon.classList.add('fa-check-double', 'text-blue-300');
+                    icon.setAttribute('title', 'Dibaca');
+                });
             }
         } catch (e) { /* ignore */ }
     }
@@ -516,7 +545,23 @@
                             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                             credentials: 'same-origin'
                         });
+
+                        if (!isMine) {
+                            // If we received a message, we can assume they opened the chat and read ours
+                            document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
+                                icon.classList.remove('fa-check', 'text-blue-200/50');
+                                icon.classList.add('fa-check-double', 'text-blue-300');
+                                icon.setAttribute('title', 'Dibaca');
+                            });
+                        }
                     }
+                })
+                .listen('MessageRead', (e) => {
+                    document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
+                        icon.classList.remove('fa-check', 'text-blue-200/50');
+                        icon.classList.add('fa-check-double', 'text-blue-300');
+                        icon.setAttribute('title', 'Dibaca');
+                    });
                 });
         } else {
             console.log('Echo is not available. Falling back to AJAX polling.');

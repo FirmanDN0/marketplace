@@ -28,4 +28,10 @@ class DashboardController extends Controller
 
         return view('customer.dashboard', compact('stats', 'recentOrders'));
     }
+    public function upgradeToProvider()
+    {
+        $user = auth()->user();
+        
+        return redirect()->route('provider.onboarding.show', $user->provider_setup_step + 1 > 3 ? 3 : $user->provider_setup_step + 1);
+    }
 }

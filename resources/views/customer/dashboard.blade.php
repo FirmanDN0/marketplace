@@ -36,8 +36,36 @@
     </div>
 </div>
 
+{{-- Alpine Data Wrapper --}}
+<div x-data="{ isDashboardLoading: true }" x-init="setTimeout(() => isDashboardLoading = false, 1500)">
+
+{{-- Skeleton Stats --}}
+<div x-show="isDashboardLoading" class="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-8">
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100/80 p-6 shadow-sm animate-pulse">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 bg-gray-200/80 rounded-xl"></div>
+                <div class="h-3 w-24 bg-gray-200/80 rounded-full"></div>
+            </div>
+            <div class="h-3 w-12 bg-gray-200/80 rounded-full"></div>
+        </div>
+        <div class="h-8 w-40 bg-gray-200/80 rounded-xl mb-4"></div>
+        <div class="h-8 w-24 bg-gray-200/80 rounded-xl"></div>
+    </div>
+    <div class="lg:col-span-3 grid grid-cols-3 gap-4">
+        @for($i = 0; $i < 3; $i++)
+        <div class="bg-white rounded-3xl border border-gray-100/80 p-5 shadow-sm animate-pulse">
+            <div class="w-10 h-10 bg-gray-200/80 rounded-xl mb-3"></div>
+            <div class="h-6 w-16 bg-gray-200/80 rounded-xl mb-2"></div>
+            <div class="h-3 w-20 bg-gray-200/80 rounded-full mb-2"></div>
+            <div class="h-3 w-16 bg-gray-200/80 rounded-full"></div>
+        </div>
+        @endfor
+    </div>
+</div>
+
 {{-- Wallet + Stats Row --}}
-<div class="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-8">
+<div x-show="!isDashboardLoading" x-cloak class="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-8" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
     {{-- Wallet Card --}}
     <div class="lg:col-span-2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl shadow-blue-600/15">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -105,8 +133,30 @@
     @endforeach
 </div>
 
+{{-- Skeleton Recent Orders --}}
+<div x-show="isDashboardLoading" class="bg-white rounded-3xl border border-gray-100/80 overflow-hidden shadow-sm animate-pulse">
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100/80">
+        <div class="h-5 w-40 bg-gray-200/80 rounded-lg"></div>
+        <div class="h-4 w-24 bg-gray-200/80 rounded-lg"></div>
+    </div>
+    <div class="p-6 space-y-4">
+        @for($i = 0; $i < 3; $i++)
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="h-4 w-16 bg-gray-200/80 rounded-md"></div>
+                <div class="h-4 w-32 bg-gray-200/80 rounded-md"></div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="h-4 w-24 bg-gray-200/80 rounded-md"></div>
+                <div class="h-6 w-16 bg-gray-200/80 rounded-full"></div>
+            </div>
+        </div>
+        @endfor
+    </div>
+</div>
+
 {{-- Recent Orders --}}
-<div class="bg-white rounded-3xl border border-gray-100/80 overflow-hidden shadow-sm">
+<div x-show="!isDashboardLoading" x-cloak class="bg-white rounded-3xl border border-gray-100/80 overflow-hidden shadow-sm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
     <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100/80">
         <h3 class="font-extrabold text-gray-900 flex items-center gap-2.5">
             <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-lg flex items-center justify-center shadow-sm shadow-blue-500/20"><i class="fas fa-clock text-xs"></i></div>
@@ -223,6 +273,8 @@
         </table>
     </div>
 </div>
+
+</div> {{-- End of Alpine Wrapper --}}
 
 @push('scripts')
 <script>

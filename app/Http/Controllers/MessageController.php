@@ -31,10 +31,21 @@ class MessageController extends Controller
         }
 
         // Mark incoming messages as read
-        $conversation->messages()
+        $unreadCount = $conversation->messages()
             ->where('sender_id', '!=', $user->id)
             ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+            ->count();
+
+        if ($unreadCount > 0) {
+            $conversation->messages()
+                ->where('sender_id', '!=', $user->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+
+            try {
+                broadcast(new \App\Events\MessageRead($conversation->id))->toOthers();
+            } catch (\Throwable $e) {}
+        }
 
         $messages = $conversation->messages()->with('sender')->get();
         $other    = $conversation->otherParticipant($user);
@@ -100,12 +111,17 @@ class MessageController extends Controller
 
         $me = auth()->user();
 
-        if ($me->role === 'customer') {
+        if (!empty($data['provider_id'])) {
+            // Current user is acting as the customer, messaging a provider
             $customerId = $me->id;
-            $providerId = $data['provider_id'] ?? null;
-        } else {
-            $customerId = $data['customer_id'] ?? null;
+            $providerId = $data['provider_id'];
+        } elseif (!empty($data['customer_id'])) {
+            // Current user is acting as the provider, messaging a customer
+            $customerId = $data['customer_id'];
             $providerId = $me->id;
+        } else {
+            $customerId = null;
+            $providerId = null;
         }
 
         abort_if(!$customerId || !$providerId, 400, 'Missing participant ID.');

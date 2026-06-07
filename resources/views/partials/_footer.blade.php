@@ -4,7 +4,7 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
             <div class="col-span-2 md:col-span-2 space-y-6">
                 <a href="{{ route('home') }}" class="inline-block transition duration-300 hover:opacity-85">
-                    <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-10 w-auto object-contain">
+                    <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-10 w-auto object-contain">
                 </a>
                 <p class="text-sm text-gray-500 leading-relaxed max-w-sm font-medium">
                     Hubungkan bisnis Anda dengan talenta freelance profesional terbaik secara mudah, cepat, dan aman.

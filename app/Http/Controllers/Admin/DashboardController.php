@@ -23,6 +23,7 @@ class DashboardController extends Controller
             'total_orders'    => Order::count(),
             'pending_orders'  => Order::where('status', 'pending_payment')->count(),
             'completed_orders' => Order::where('status', 'completed')->count(),
+            'pending_providers' => User::where('role', 'customer')->where('provider_setup_step', '>=', 3)->count(),
             'total_revenue'   => Transaction::where('type', 'fee')->sum('amount'),
             'balance'         => optional($admin->profile)->balance ?? 0,
         ];

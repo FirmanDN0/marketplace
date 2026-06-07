@@ -57,6 +57,7 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
             'role'     => $data['role'],
             'status'   => $data['status'],
+            'provider_setup_step' => $data['role'] === 'provider' ? 3 : 0,
         ]);
 
         UserProfile::create(['user_id' => $user->id]);
@@ -88,11 +89,28 @@ class UserController extends Controller
             'status'   => $data['status'],
         ];
 
+        if ($data['role'] === 'provider' && $user->provider_setup_step < 3) {
+            $update['provider_setup_step'] = 3;
+        }
+
         if (!empty($data['password'])) {
             $update['password'] = Hash::make($data['password']);
         }
 
+        $oldRole = $user->role;
         $user->update($update);
+
+        // If admin manually changed role to provider, notify the user
+        if ($oldRole === 'customer' && $data['role'] === 'provider') {
+            \App\Services\NotificationService::send(
+                $user->id,
+                'success',
+                'Aplikasi Disetujui!',
+                'Selamat! Aplikasi Anda untuk menjadi Provider telah disetujui. Anda sekarang dapat mengakses Dasbor Penjual dan membuat layanan.',
+                [],
+                route('provider.dashboard')
+            );
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
@@ -115,5 +133,25 @@ class UserController extends Controller
 
         $user->update(['status' => $data['status']]);
         return back()->with('success', 'User status updated.');
+    }
+    
+    public function approveProvider(User $user)
+    {
+        if ($user->role === 'customer' && $user->provider_setup_step >= 3) {
+            $user->update(['role' => 'provider']);
+            
+            \App\Services\NotificationService::send(
+                $user->id,
+                'success',
+                'Aplikasi Disetujui!',
+                'Selamat! Aplikasi Anda untuk menjadi Provider telah disetujui. Anda sekarang dapat mengakses Dasbor Penjual dan membuat layanan.',
+                [],
+                route('provider.dashboard')
+            );
+
+            return back()->with('success', 'Aplikasi Provider telah disetujui. Pengguna ini sekarang adalah Provider.');
+        }
+        
+        return back()->withErrors(['error' => 'Aplikasi tidak valid atau pengguna sudah menjadi Provider.']);
     }
 }

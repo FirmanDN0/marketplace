@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Checkout') - ServeMix</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}?v=5">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.webp') }}?v=5">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
                         <i class="fas fa-arrow-left text-sm"></i>
                     </a>
                     <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0">
-                        <img src="{{ asset('images/logo_horizontal.png') }}" alt="ServeMix" class="h-8 w-auto object-contain">
+                        <img src="{{ asset('images/logo_horizontal.webp') }}" alt="ServeMix" class="h-8 w-auto object-contain">
                     </a>
                 </div>
 

@@ -165,9 +165,35 @@
         </aside>
 
         {{-- Main Content --}}
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0" x-data="{ isPageLoading: true }" x-init="setTimeout(() => isPageLoading = false, 1500)">
             @if($services->count())
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {{-- Skeleton Loader --}}
+            <div x-show="isPageLoading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                @for($i = 0; $i < 6; $i++)
+                <div class="bg-white border border-gray-100/80 rounded-3xl overflow-hidden animate-pulse shadow-sm">
+                    <div class="aspect-[4/3] bg-gray-200/60"></div>
+                    <div class="p-5">
+                        <div class="flex items-center gap-2.5 mb-3">
+                            <div class="w-7 h-7 rounded-full bg-gray-200/80 shrink-0"></div>
+                            <div class="h-3 w-24 bg-gray-200/80 rounded-full"></div>
+                        </div>
+                        <div class="h-4 w-full bg-gray-200/80 rounded-full mb-2.5"></div>
+                        <div class="h-4 w-2/3 bg-gray-200/80 rounded-full mb-4"></div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="h-3 w-3 bg-gray-200/80 rounded-full"></div>
+                            <div class="h-3 w-16 bg-gray-200/80 rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="px-5 py-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/40">
+                        <div class="h-2 w-16 bg-gray-200/80 rounded-full"></div>
+                        <div class="h-4 w-24 bg-gray-200/80 rounded-full"></div>
+                    </div>
+                </div>
+                @endfor
+            </div>
+
+            {{-- Actual Content --}}
+            <div x-show="!isPageLoading" x-cloak class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                 @foreach($services as $service)
                 <div class="group bg-white border border-gray-100/80 rounded-3xl overflow-hidden card-hover-lift card-glow">
                     <div class="relative aspect-[4/3] overflow-hidden">

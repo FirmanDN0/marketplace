@@ -58,6 +58,35 @@ class ServiceController extends Controller
         return view('services.index', compact('services', 'categories'));
     }
 
+    public function suggestions(Request $request)
+    {
+        $keyword = $request->q;
+        if (empty($keyword) || strlen($keyword) < 2) {
+            return response()->json([]);
+        }
+
+        $services = Service::active()
+            ->with(['provider', 'images', 'packages'])
+            ->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhereHas('provider', fn($p) => $p->where('name', 'like', "%{$keyword}%"))
+                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$keyword}%"));
+            })
+            ->limit(5)
+            ->get()
+            ->map(function ($service) {
+                return [
+                    'title' => $service->title,
+                    'url' => route('services.show', $service->slug),
+                    'provider' => $service->provider->name,
+                    'price' => 'Rp ' . number_format($service->getLowestPrice(), 0, ',', '.'),
+                    'image' => $service->images->first() ? (filter_var($service->images->first()->image_path, FILTER_VALIDATE_URL) ? $service->images->first()->image_path : \Illuminate\Support\Facades\Storage::url($service->images->first()->image_path)) : null,
+                ];
+            });
+
+        return response()->json($services);
+    }
+
     public function show(Service $service)
     {
         if ($service->status !== 'active') {
