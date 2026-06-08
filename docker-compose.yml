@@ -1,0 +1,70 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: marketplace-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - marketplace
+
+  webserver:
+    image: nginx:alpine
+    container_name: marketplace-nginx
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - marketplace
+
+  db:
+    image: mysql:8.0
+    container_name: marketplace-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: marketplace
+      MYSQL_USER: marketplace
+      MYSQL_PASSWORD: Marketplace123!
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - marketplace
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "marketplace", "-pMarketplace123!"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: marketplace-pma
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+    networks:
+      - marketplace
+
+volumes:
+  mysql_data:
+
+networks:
+  marketplace:
+    driver: bridge
