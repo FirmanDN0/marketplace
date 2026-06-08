@@ -82,7 +82,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script type="module">
 (() => {
     const pollUrl    = '/api/realtime/notifications/poll';
     const container  = document.getElementById('notif-container');
@@ -161,23 +161,21 @@
         } catch (e) { /* ignore */ }
     }
 
-    setTimeout(() => {
-        if (window.Echo) {
-            window.Echo.private('App.Models.User.' + {{ auth()->id() }})
-                .listen('NotificationSent', (e) => {
-                    const notif = e.notification;
-                    // Add time_ago property since it's typically appended by the resource
-                    notif.time_ago = 'Baru saja';
-                    if (!document.querySelector(`[data-notif-id="${notif.id}"]`)) {
-                        renderNotification(notif);
-                        lastId = Math.max(lastId, notif.id);
-                        if (window.syncUiUnreadCounts) window.syncUiUnreadCounts(true);
-                    }
-                });
-        } else {
-            setInterval(poll, 5000);
-        }
-    }, 1000);
+    if (window.Echo) {
+        window.Echo.private('App.Models.User.' + {{ auth()->id() }})
+            .listen('NotificationSent', (e) => {
+                const notif = e.notification;
+                // Add time_ago property since it's typically appended by the resource
+                notif.time_ago = 'Baru saja';
+                if (!document.querySelector(`[data-notif-id="${notif.id}"]`)) {
+                    renderNotification(notif);
+                    lastId = Math.max(lastId, notif.id);
+                    if (window.syncUiUnreadCounts) window.syncUiUnreadCounts(true);
+                }
+            });
+    } else {
+        setInterval(poll, 5000);
+    }
 
     document.addEventListener('visibilitychange', () => {
         polling = document.visibilityState === 'visible';

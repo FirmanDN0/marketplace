@@ -405,7 +405,7 @@
 @endauth
 
 @auth
-<script>
+<script type="module">
 (() => {
     const syncUrl = '{{ route('notifications.sync-counts') }}';
     let syncInFlight = false;
@@ -507,17 +507,15 @@
     document.addEventListener('ui:sync-unread-counts', () => syncUnreadCounts(true));
 
     // Listen to real-time notifications if Echo is available, otherwise fallback to polling
-    setTimeout(() => {
-        if (window.Echo) {
-            window.Echo.private('App.Models.User.' + {{ auth()->id() }})
-                .listen('NotificationSent', (e) => {
-                    syncUnreadCounts(true);
-                });
-        } else {
-            // Faster polling: 5 seconds instead of 15
-            setInterval(() => syncUnreadCounts(false), 5000);
-        }
-    }, 1000);
+    if (window.Echo) {
+        window.Echo.private('App.Models.User.' + {{ auth()->id() }})
+            .listen('NotificationSent', (e) => {
+                syncUnreadCounts(true);
+            });
+    } else {
+        // Faster polling: 5 seconds instead of 15
+        setInterval(() => syncUnreadCounts(false), 5000);
+    }
 
     syncUnreadCounts(true);
 })();

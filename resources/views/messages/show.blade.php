@@ -320,7 +320,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script type="module">
 (() => {
     const convId        = {{ $conversation->id }};
     const pollUrl       = '/api/realtime/messages/' + convId + '/poll';
@@ -528,46 +528,44 @@
     }
 
     // Initialize WebSocket listener if Echo is available, otherwise fallback to polling
-    setTimeout(() => {
-        if (window.Echo) {
-            console.log('Echo is available. Listening to conversation.' + convId);
-            window.Echo.private('conversation.' + convId)
-                .listen('MessageSent', (e) => {
-                    const isMine = e.message.sender_id === {{ auth()->id() }};
-                    e.message.mine = isMine;
-                    if (!document.querySelector(`[data-msg-id="${e.message.id}"]`)) {
-                        renderMessage(e.message);
-                        lastId = Math.max(lastId, e.message.id);
-                        if (window.syncUiUnreadCounts) window.syncUiUnreadCounts(true);
-                        
-                        // Mark as read via API
-                        fetch(pollUrl + '?after=' + lastId, {
-                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'same-origin'
-                        });
-
-                        if (!isMine) {
-                            // If we received a message, we can assume they opened the chat and read ours
-                            document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
-                                icon.classList.remove('fa-check', 'text-blue-200/50');
-                                icon.classList.add('fa-check-double', 'text-blue-300');
-                                icon.setAttribute('title', 'Dibaca');
-                            });
-                        }
-                    }
-                })
-                .listen('MessageRead', (e) => {
-                    document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
-                        icon.classList.remove('fa-check', 'text-blue-200/50');
-                        icon.classList.add('fa-check-double', 'text-blue-300');
-                        icon.setAttribute('title', 'Dibaca');
+    if (window.Echo) {
+        console.log('Echo is available. Listening to conversation.' + convId);
+        window.Echo.private('conversation.' + convId)
+            .listen('MessageSent', (e) => {
+                const isMine = e.message.sender_id === {{ auth()->id() }};
+                e.message.mine = isMine;
+                if (!document.querySelector(`[data-msg-id="${e.message.id}"]`)) {
+                    renderMessage(e.message);
+                    lastId = Math.max(lastId, e.message.id);
+                    if (window.syncUiUnreadCounts) window.syncUiUnreadCounts(true);
+                    
+                    // Mark as read via API
+                    fetch(pollUrl + '?after=' + lastId, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        credentials: 'same-origin'
                     });
+
+                    if (!isMine) {
+                        // If we received a message, we can assume they opened the chat and read ours
+                        document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
+                            icon.classList.remove('fa-check', 'text-blue-200/50');
+                            icon.classList.add('fa-check-double', 'text-blue-300');
+                            icon.setAttribute('title', 'Dibaca');
+                        });
+                    }
+                }
+            })
+            .listen('MessageRead', (e) => {
+                document.querySelectorAll('.fa-check.text-blue-200\\/50').forEach(icon => {
+                    icon.classList.remove('fa-check', 'text-blue-200/50');
+                    icon.classList.add('fa-check-double', 'text-blue-300');
+                    icon.setAttribute('title', 'Dibaca');
                 });
-        } else {
-            console.log('Echo is not available. Falling back to AJAX polling.');
-            setInterval(poll, 3000);
-        }
-    }, 1000);
+            });
+    } else {
+        console.log('Echo is not available. Falling back to AJAX polling.');
+        setInterval(poll, 3000);
+    }
 
     // Send message via AJAX
     msgForm.addEventListener('submit', async (e) => {
