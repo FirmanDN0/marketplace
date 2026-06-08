@@ -29,7 +29,7 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Nominal</label>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                        @foreach([10000, 25000, 50000, 100000, 250000, 500000] as $preset)
+                        @foreach([1, 100, 500, 1000, 5000, 10000] as $preset)
                         <button type="button" onclick="setAmount({{ $preset }})" id="preset-{{ $preset }}"
                                 class="border-2 border-gray-200/80 hover:border-blue-500 rounded-2xl py-2.5 text-sm font-bold text-gray-700 transition focus:outline-none">
                             Rp {{ number_format($preset, 0, ',', '.') }}
@@ -37,16 +37,16 @@
                         @endforeach
                     </div>
                     <input type="number" name="amount" id="amount"
-                           placeholder="Atau ketik nominal sendiri (min Rp 10.000)"
-                           value="{{ old('amount') }}" min="10000" max="100000000" required
+                           placeholder="Atau ketik nominal sendiri (min Rp 1)"
+                           value="{{ old('amount') }}" min="1" max="100000000" required
                            class="w-full rounded-2xl border border-gray-200/80 px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                     @error('amount')<span class="text-red-500 text-xs mt-1">{{ $message }}</span>@enderror
                 </div>
 
                 <div class="bg-gray-50 border border-gray-100/80 rounded-2xl p-4 text-sm text-gray-600">
-                    <i class="fas fa-shield-alt text-blue-600 mr-1"></i>
-                    <strong>Pembayaran via Midtrans</strong><br>
-                    <span class="text-gray-400">Mendukung: Kartu Kredit, Transfer Bank, GoPay, QRIS, Alfamart, dan lainnya.</span>
+                    <i class="fas fa-qrcode text-blue-600 mr-1"></i>
+                    <strong>Pembayaran via E-Wallet / QRIS</strong><br>
+                    <span class="text-gray-400">Mendukung: GoPay, OVO, Dana, LinkAja, ShopeePay, dan lainnya.</span>
                 </div>
 
                 <button type="submit" :disabled="submitting" :class="{'opacity-75 cursor-not-allowed': submitting}" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">

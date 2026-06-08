@@ -97,12 +97,12 @@ class TopUpController extends Controller
     }
 
     /**
-     * Create top-up record and get Midtrans Snap token.
+     * Create top-up record and get Custom Gateway Payment.
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'amount' => 'required|numeric|min:10000|max:100000000',
+            'amount' => 'required|numeric|min:1|max:100000000',
         ]);
 
         $user    = auth()->user();
@@ -115,32 +115,29 @@ class TopUpController extends Controller
             'status'   => 'pending',
         ]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id'     => $orderId,
-                'gross_amount' => (int) $data['amount'],
-            ],
-            'item_details'       => [
-                [
-                    'id'       => 'TOPUP',
-                    'price'    => (int) $data['amount'],
-                    'quantity' => 1,
-                    'name'     => 'Top Up Saldo Dompet',
-                ],
-            ],
-            'customer_details'   => [
-                'first_name' => $user->name,
-                'email'      => $user->email,
-            ],
-            'callbacks'          => [
-                'finish' => route('wallet.topup.finish', $topUp->id),
-            ],
-        ];
+        // Call Custom Payment Gateway
+        $apiKey = config('services.payment_gateway.api_key');
+        $baseUrl = config('services.payment_gateway.url');
 
-        $snapToken = Snap::getSnapToken($params);
-        $topUp->update(['snap_token' => $snapToken]);
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'X-API-KEY' => $apiKey,
+            'Accept' => 'application/json',
+        ])->post("{$baseUrl}/api/v1/transactions", [
+            'reference_id' => $orderId,
+            'amount' => $data['amount'],
+        ]);
 
-        return view('topup.pay', compact('topUp', 'snapToken'));
+        $qrisString = null;
+        if ($response->successful()) {
+            $responseData = $response->json('data');
+            $qrisString = $responseData['qris_string'] ?? null;
+            $topUp->update(['snap_token' => $qrisString]); // We'll save qris_string here to reuse the field
+        } else {
+            \Illuminate\Support\Facades\Log::error('Payment Gateway Error: ' . $response->body());
+            return back()->with('error', 'Gagal membuat transaksi di Payment Gateway. Silakan coba lagi.');
+        }
+
+        return redirect()->route('wallet.topup.finish', $topUp->id);
     }
 
     /**
@@ -152,23 +149,29 @@ class TopUpController extends Controller
             abort(403);
         }
 
-        // Re-check status from Midtrans API
+        // Re-check status from Custom Payment Gateway API
         if ($topUp->isPending()) {
             try {
-                $statusObj = \Midtrans\Transaction::status($topUp->order_id);
-                $statusArr = (array) $statusObj;
-                $txStatus  = $statusArr['transaction_status'] ?? null;
-                $payType   = $statusArr['payment_type'] ?? null;
-                $fraud     = $statusArr['fraud_status'] ?? null;
-                if ($txStatus) {
-                    $appStatus = $this->mapMidtransStatus($txStatus, $fraud);
-                    $this->processStatus($topUp, $appStatus, $payType, $statusArr);
+                $apiKey = config('services.payment_gateway.api_key');
+                $baseUrl = config('services.payment_gateway.url');
+
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-KEY' => $apiKey,
+                    'Accept' => 'application/json',
+                ])->get("{$baseUrl}/api/v1/transactions/{$topUp->order_id}");
+
+                if ($response->successful()) {
+                    $data = $response->json('data');
+                    $pgStatus = strtolower($data['status'] ?? '');
+
+                    if (in_array($pgStatus, ['paid', 'success', 'settlement'])) {
+                        $this->processStatus($topUp, 'success', 'custom_gateway', $data);
+                    } elseif (in_array($pgStatus, ['expired', 'failed', 'cancelled'])) {
+                        $this->processStatus($topUp, 'failed', null, $data);
+                    }
                 }
             } catch (\Exception $e) {
-                // Only mark as expired via 404 if older than 24 hours
-                if (str_contains($e->getMessage(), '404') && $topUp->created_at->lt(now()->subHours(24))) {
-                    $this->processStatus($topUp, 'expired', null, ['error' => 'Transaction not found in Midtrans']);
-                }
+                \Illuminate\Support\Facades\Log::error('Payment Gateway Status Check Error: ' . $e->getMessage());
             }
             $topUp->refresh();
         }
@@ -241,7 +244,7 @@ class TopUpController extends Controller
                     'amount'         => $topUp->amount,
                     'balance_before' => $balanceBefore,
                     'balance_after'  => $balanceBefore + $topUp->amount,
-                    'description'    => 'Top-up via Midtrans (' . ($paymentType ?? 'online') . ')',
+                    'description'    => 'Top-up via E-Wallet Gateway (' . ($paymentType ?? 'online') . ')',
                     'reference_id'   => $topUp->order_id,
                 ]);
             }

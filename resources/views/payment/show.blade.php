@@ -42,7 +42,7 @@
             </div>
 
             {{-- Payment Methods --}}
-            <div x-data="{ method: 'midtrans' }" class="space-y-3">
+            <div x-data="{ method: 'custom_gateway' }" class="space-y-3">
                 <p class="text-sm font-bold text-gray-700 mb-2">Pilih Metode Pembayaran</p>
 
                 {{-- Wallet Option --}}
@@ -69,16 +69,16 @@
                     </div>
                 </label>
 
-                {{-- Midtrans Option --}}
+                {{-- Custom Gateway Option --}}
                 <label class="flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition"
-                       :class="method === 'midtrans' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
-                    <input type="radio" name="method" value="midtrans" x-model="method" class="text-blue-600 focus:ring-blue-500">
+                       :class="method === 'custom_gateway' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
+                    <input type="radio" name="method" value="custom_gateway" x-model="method" class="text-blue-600 focus:ring-blue-500">
                     <div class="flex-1">
                         <div class="flex items-center gap-2">
-                            <i class="fas fa-university text-blue-600"></i>
-                            <span class="font-semibold text-gray-900 text-sm">Payment Gateway (Midtrans)</span>
+                            <i class="fas fa-qrcode text-blue-600"></i>
+                            <span class="font-semibold text-gray-900 text-sm">E-Wallet / QRIS (Payment Gateway)</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Transfer Bank, E-Wallet, Kartu Kredit, QRIS, dll.</p>
+                        <p class="text-xs text-gray-500 mt-1">Gopay, OVO, Dana, LinkAja, ShopeePay</p>
                     </div>
                 </label>
 
@@ -94,37 +94,23 @@
                     </form>
                 </div>
 
-                {{-- Midtrans Pay Button --}}
-                <div x-show="method === 'midtrans'" x-cloak>
-                    <button id="pay-button" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15">
-                        <i class="fas fa-lock"></i> Bayar via Midtrans
+                {{-- Custom Gateway Pay View --}}
+                <div x-show="method === 'custom_gateway'" x-cloak class="mt-4 flex flex-col items-center">
+                    @if($snapToken)
+                    <p class="text-sm text-gray-500 mb-4 font-medium text-center">Scan QRIS di bawah ini dengan aplikasi E-Wallet Anda untuk menyelesaikan pembayaran.</p>
+                    <div class="p-4 bg-white border-2 border-dashed border-gray-300 rounded-2xl shadow-sm inline-block mb-4">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($snapToken) }}" alt="QRIS" class="w-48 h-48 rounded-xl object-contain">
+                    </div>
+                    <button onclick="window.location.reload()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15">
+                        <i class="fas fa-sync-alt"></i> Cek Status Pembayaran
                     </button>
+                    @else
+                    <p class="text-sm text-red-500 font-medium">Gagal menampilkan QRIS. Silakan muat ulang halaman.</p>
+                    @endif
                 </div>
 
                 <a href="{{ route('customer.orders.index') }}" class="block text-center text-sm text-gray-500 hover:text-blue-600 transition mt-2 font-medium">
                     Batal dan kembali
                 </a>
             </div>
-        </div>
-    </div>
-</div>
-
-<script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-<script>
-document.getElementById('pay-button').onclick = function () {
-    snap.pay('{{ $snapToken }}', {
-        onSuccess: function(result) {
-            window.location.href = '{{ route('payment.finish', $order->id) }}?status=success';
-        },
-        onPending: function(result) {
-            window.location.href = '{{ route('payment.finish', $order->id) }}?status=pending';
-        },
-        onError: function(result) {
-            window.location.href = '{{ route('payment.finish', $order->id) }}?status=failed';
-        },
-        onClose: function() {}
-    });
-};
-</script>
 @endsection

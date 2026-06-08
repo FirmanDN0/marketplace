@@ -38,10 +38,15 @@
             <div class="text-xs text-gray-400 mb-6 font-medium">Order ID: {{ $topUp->order_id }}</div>
 
             @if($topUp->snap_token)
-            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6 text-sm text-yellow-700">
-                <p class="mb-3 font-medium">Belum memilih metode pembayaran? Klik tombol di bawah untuk membuka kembali halaman pembayaran.</p>
-                <button id="reopen-pay" class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition">
-                    Pilih Metode Pembayaran
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 text-sm text-blue-700">
+                <p class="mb-4 font-medium">Scan QRIS di bawah ini dengan aplikasi E-Wallet Anda untuk menyelesaikan pembayaran.</p>
+                <div class="flex justify-center mb-4">
+                    <div class="p-4 bg-white border-2 border-dashed border-blue-300 rounded-2xl shadow-sm inline-block">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($topUp->snap_token) }}" alt="QRIS" class="w-48 h-48 rounded-xl object-contain">
+                    </div>
+                </div>
+                <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm transition inline-flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i> Cek Status Pembayaran
                 </button>
             </div>
             @endif
@@ -71,18 +76,12 @@
 
 </div>
 
-@if($topUp->isPending() && $topUp->snap_token)
-<script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+@if($topUp->isPending())
 <script>
-document.getElementById('reopen-pay').onclick = function () {
-    snap.pay('{{ $topUp->snap_token }}', {
-        onSuccess: function(result) { window.location.reload(); },
-        onPending: function(result) { window.location.reload(); },
-        onError: function(result) { window.location.reload(); },
-        onClose: function() {}
-    });
-};
+    // Auto-refresh setiap 15 detik untuk cek status pembayaran
+    setTimeout(function() {
+        window.location.reload();
+    }, 15000);
 </script>
 @endif
 @endsection

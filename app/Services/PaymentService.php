@@ -33,54 +33,31 @@ class PaymentService
     }
 
     /**
-     * Initiate a payment for an order — generates a real Midtrans Snap token.
+     * Initiate a payment for an order — generates Custom Gateway Payment.
      */
-    public function initiate(Order $order, string $method = 'midtrans'): Payment
+    public function initiate(Order $order, string $method = 'custom_gateway'): Payment
     {
         return DB::transaction(function () use ($order, $method) {
-            $itemDetails = [
-                [
-                    'id'       => 'SVC-' . $order->service_id,
-                    'price'    => (int) $order->price,
-                    'quantity' => 1,
-                    'name'     => substr(optional($order->service)->title ?? 'Service Order', 0, 50),
-                ]
-            ];
+            // Call Custom Payment Gateway
+            $apiKey = config('services.payment_gateway.api_key');
+            $baseUrl = config('services.payment_gateway.url');
 
-            if ($order->tax_fee > 0) {
-                $itemDetails[] = [
-                    'id'       => 'TAX-FEE',
-                    'price'    => (int) $order->tax_fee,
-                    'quantity' => 1,
-                    'name'     => 'Biaya Layanan / PPN',
-                ];
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'X-API-KEY' => $apiKey,
+                'Accept' => 'application/json',
+            ])->post("{$baseUrl}/api/v1/transactions", [
+                'reference_id' => $order->order_number,
+                'amount' => $order->grand_total,
+            ]);
+
+            $qrisString = null;
+            if ($response->successful()) {
+                $responseData = $response->json('data');
+                $qrisString = $responseData['qris_string'] ?? null;
+            } else {
+                \Illuminate\Support\Facades\Log::error('Payment Gateway Error on Order: ' . $response->body());
+                throw new \Exception('Gagal menghubungi Payment Gateway. Silakan coba lagi.');
             }
-
-            if ($order->discount > 0) {
-                $itemDetails[] = [
-                    'id'       => 'DISC-VOUCHER',
-                    'price'    => -((int) $order->discount),
-                    'quantity' => 1,
-                    'name'     => 'Potongan Promo',
-                ];
-            }
-
-            $params = [
-                'transaction_details' => [
-                    'order_id'     => $order->order_number,
-                    'gross_amount' => (int) $order->grand_total,
-                ],
-                'item_details' => $itemDetails,
-                'customer_details' => [
-                    'first_name' => $order->customer->name,
-                    'email'      => $order->customer->email,
-                ],
-                'callbacks' => [
-                    'finish' => route('payment.finish', $order->id),
-                ],
-            ];
-
-            $snapToken = Snap::getSnapToken($params);
 
             $payment = Payment::create([
                 'order_id'       => $order->id,
@@ -88,14 +65,14 @@ class PaymentService
                 'amount'         => $order->grand_total,
                 'payment_method' => $method,
                 'status'         => 'pending',
-                'payment_token'  => $snapToken,
+                'payment_token'  => $qrisString, // store qris_string here
                 'payment_url'    => route('payment.show', $order->id),
             ]);
 
             PaymentLog::create([
                 'payment_id' => $payment->id,
                 'event'      => 'payment_initiated',
-                'payload'    => ['method' => $method, 'amount' => $order->grand_total, 'snap_token' => $snapToken],
+                'payload'    => ['method' => $method, 'amount' => $order->grand_total, 'qris_string' => $qrisString],
             ]);
 
             return $payment;

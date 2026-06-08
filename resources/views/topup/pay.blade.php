@@ -19,11 +19,20 @@
                 </div>
             </div>
 
-            <p class="text-sm text-gray-500 mb-6 font-medium">Klik tombol di bawah untuk membuka halaman pembayaran Midtrans. Selesaikan pembayaran di jendela popup.</p>
-
-            <button id="pay-button" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
-                <i class="fas fa-credit-card"></i> Bayar Sekarang via Midtrans
+            @if($qrisString)
+            <div class="mb-6 flex flex-col items-center">
+                <p class="text-sm text-gray-500 mb-4 font-medium">Scan QRIS di bawah ini dengan aplikasi E-Wallet kesayangan Anda.</p>
+                <div class="p-4 bg-white border-2 border-dashed border-gray-300 rounded-2xl shadow-sm inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($qrisString) }}" alt="QRIS" class="w-48 h-48 rounded-xl object-contain">
+                </div>
+            </div>
+            
+            <button onclick="window.location.reload()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-3.5 rounded-2xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15 hover:-translate-y-0.5 active:translate-y-0 duration-300">
+                <i class="fas fa-sync-alt"></i> Cek Status Pembayaran
             </button>
+            @else
+            <p class="text-sm text-red-500 mb-6 font-medium">Maaf, gagal menampilkan QRIS. Silakan coba kembali.</p>
+            @endif
 
             <div class="mt-4">
                 <a href="{{ route('wallet.index') }}" class="text-sm text-gray-500 hover:text-blue-600 transition font-medium">Batalkan dan kembali</a>
@@ -31,23 +40,4 @@
         </div>
     </div>
 </div>
-
-<script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-<script>
-document.getElementById('pay-button').onclick = function () {
-    snap.pay('{{ $snapToken }}', {
-        onSuccess: function(result) {
-            window.location.href = '{{ route('wallet.topup.finish', $topUp->id) }}?status=success';
-        },
-        onPending: function(result) {
-            window.location.href = '{{ route('wallet.topup.finish', $topUp->id) }}?status=pending';
-        },
-        onError: function(result) {
-            window.location.href = '{{ route('wallet.topup.finish', $topUp->id) }}?status=failed';
-        },
-        onClose: function() {}
-    });
-};
-</script>
 @endsection

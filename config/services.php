@@ -41,6 +41,12 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'payment_gateway' => [
+        'api_key' => env('PAYMENT_GATEWAY_API_KEY'),
+        'secret_key' => env('PAYMENT_GATEWAY_SECRET_KEY'),
+        'url' => env('PAYMENT_GATEWAY_URL', 'http://127.0.0.1:8000'),
+    ],
+
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
     ],

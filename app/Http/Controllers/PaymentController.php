@@ -60,7 +60,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Finish redirect page after Midtrans Snap payment.
+     * Finish redirect page after payment.
      */
     public function finish(Request $request, Order $order)
     {
@@ -70,27 +70,30 @@ class PaymentController extends Controller
 
         $payment = $order->payment;
 
-        // Re-check status from Midtrans API if still pending
+        // Re-check status from Custom Payment Gateway API if still pending
         if ($payment && $payment->status === 'pending') {
             try {
-                $statusObj = \Midtrans\Transaction::status($order->order_number);
-                $statusArr = (array) $statusObj;
-                $txStatus  = $statusArr['transaction_status'] ?? null;
-                $payType   = $statusArr['payment_type'] ?? null;
-                $fraud     = $statusArr['fraud_status'] ?? null;
-                $txId      = $statusArr['transaction_id'] ?? null;
+                $apiKey = config('services.payment_gateway.api_key');
+                $baseUrl = config('services.payment_gateway.url');
 
-                if ($txStatus) {
-                    $appStatus = $this->paymentService->mapMidtransStatus($txStatus, $fraud);
-                    if ($appStatus === 'success') {
-                        $this->paymentService->markSuccess($payment, $payType, $txId);
-                    } elseif (in_array($appStatus, ['failed'])) {
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-KEY' => $apiKey,
+                    'Accept' => 'application/json',
+                ])->get("{$baseUrl}/api/v1/transactions/{$order->order_number}");
+
+                if ($response->successful()) {
+                    $data = $response->json('data');
+                    $pgStatus = strtolower($data['status'] ?? '');
+                    $txId = $data['transaction_id'] ?? null;
+
+                    if (in_array($pgStatus, ['paid', 'success', 'settlement'])) {
+                        $this->paymentService->markSuccess($payment, 'custom_gateway', $txId);
+                    } elseif (in_array($pgStatus, ['expired', 'failed', 'cancelled'])) {
                         $this->paymentService->markFailed($payment);
                     }
                 }
             } catch (\Exception $e) {
-                Log::error('Midtrans API Error in finish callback: ' . $e->getMessage());
-                // Midtrans API error — payment may still be processed via webhook
+                Log::error('Payment Gateway Status Check Error: ' . $e->getMessage());
             }
 
             $payment->refresh();

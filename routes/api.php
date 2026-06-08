@@ -18,6 +18,9 @@ Route::name('api.')->group(function () {
     Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
     Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
     Route::apiResource('reviews', ReviewController::class)->only(['index', 'show']);
+    
+    // Webhook from Custom Payment Gateway
+    Route::post('/payment-callback', [\App\Http\Controllers\Api\PaymentCallbackController::class, 'handle']);
 
     // Protected APIs
     Route::middleware('auth:sanctum')->group(function () {
